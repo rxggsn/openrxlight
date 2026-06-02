@@ -1,0 +1,198 @@
+[
+    {
+        "tag": "column_set",
+        "horizontal_spacing": "8px",
+        "horizontal_align": "left",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "auto",
+                "elements": [
+                    {
+                        "tag": "markdown",
+                        "content": "费率类型 <font color='red'>*</font>",
+                        "text_align": "left",
+                        "text_size": "normal_v2",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top"
+            },
+            {
+                "tag": "column",
+                "width": "weighted",
+                "elements": [
+                    {
+                        "tag": "select_static",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "请选择"
+                        },
+                        "options": [
+                            {
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "慢充"
+                                },
+                                "value": "0"
+                            },
+                            {
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "快充"
+                                },
+                                "value": "1"
+                            },
+                            {
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "超充"
+                                },
+                                "value": "2"
+                            }
+                        ],
+                        "type": "default",
+                        "width": "fill",
+                        "name": "fee_type_${index_count}",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top",
+                "weight": 1
+            }
+        ],
+        "margin": "0px 0px 0px 0px"
+    },
+    {
+        "tag": "column_set",
+        "horizontal_spacing": "8px",
+        "horizontal_align": "left",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "auto",
+                "elements": [
+                    {
+                        "tag": "markdown",
+                        "content": "时间范围 <font color='red'>*</font>",
+                        "text_align": "left",
+                        "text_size": "normal_v2",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top"
+            },
+            {
+                "tag": "column",
+                "width": "weighted",
+                "elements": [
+                    {
+                        "tag": "picker_time",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "开始时间"
+                        },
+                        "width": "default",
+                        "required": false,
+                        "name": "start_time_${index_count}",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top",
+                "weight": 1
+            },
+            {
+                "tag": "column",
+                "width": "weighted",
+                "elements": [
+                    {
+                        "tag": "picker_time",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "结束时间"
+                        },
+                        "width": "default",
+                        "required": false,
+                        "name": "end_time_${index_count}",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top",
+                "weight": 1
+            }
+        ],
+        "margin": "0px 0px 0px 0px"
+    },
+    {
+        "tag": "column_set",
+        "horizontal_spacing": "8px",
+        "horizontal_align": "left",
+        "columns": [
+            {
+                "tag": "column",
+                "width": "weighted",
+                "elements": [
+                    {
+                        "tag": "input",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "电费"
+                        },
+                        "default_value": "",
+                        "width": "default",
+                        "label": {
+                            "tag": "plain_text",
+                            "content": "电费"
+                        },
+                        "label_position": "left",
+                        "required": true,
+                        "name": "charge_fee_${index_count}",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top",
+                "weight": 1
+            },
+            {
+                "tag": "column",
+                "width": "weighted",
+                "elements": [
+                    {
+                        "tag": "input",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "服务费"
+                        },
+                        "default_value": "",
+                        "width": "default",
+                        "label": {
+                            "tag": "plain_text",
+                            "content": "服务费"
+                        },
+                        "label_position": "left",
+                        "required": true,
+                        "name": "service_fee_${index_count}",
+                        "margin": "0px 0px 0px 0px"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top",
+                "weight": 1
+            }
+        ],
+        "margin": "0px 0px 0px 0px"
+    }
+]

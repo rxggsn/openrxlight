@@ -1,0 +1,83 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "isBackground": false,
+            // "problemMatcher": [
+            //     {
+            //         "owner": "quarkus",
+            //         "fileLocation": [
+            //             "relative",
+            //             "${workspaceFolder}/src/main/resources/templates"
+            //         ],
+            //         "pattern": [
+            //             {
+            //                 "regexp": "\\[(\\d+)\\]\\s(.*):(\\d+):(\\d+)\\s\\-\\s{(.*)}:\\s(.*)$",
+            //                 "file": 2,
+            //                 "line": 3,
+            //                 "column": 4,
+            //                 "message": 6
+            //             }
+            //         ],
+            //         "background": {
+            //             "activeOnStart": true,
+            //             "beginsPattern": "^.*Scanning for projects...",
+            //             "endsPattern": "(^.*Quarkus .* started in .*\\.)|(^.* ERROR .* Failed to start)"
+            //         }
+            //     }
+            // ],
+            "group": "build",
+            "label": "quarkus:dev (rxlight-api)",
+            "command": "export JWT_SECRET='jwt_secret' && ${workspaceFolder}/mvnw quarkus:dev -pl rxlight",
+            "dependsOn": ["install dependencies", "clean rxlight workspace"],
+            "dependsOrder": "sequence",
+            "windows": {
+                "command": "${workspaceFolder}/mvnw.cmd quarkus:dev -pl rxlight -Dquarkus.profile=dev"
+            }
+        },
+        {
+            "type": "shell",
+            "isBackground": false,
+            // "problemMatcher": [
+            //     {
+            //         "owner": "quarkus",
+            //         "fileLocation": [
+            //             "relative",
+            //             "${workspaceFolder}/src/main/resources/templates"
+            //         ],
+            //         "pattern": [
+            //             {
+            //                 "regexp": "\\[(\\d+)\\]\\s(.*):(\\d+):(\\d+)\\s\\-\\s{(.*)}:\\s(.*)$",
+            //                 "file": 2,
+            //                 "line": 3,
+            //                 "column": 4,
+            //                 "message": 6
+            //             }
+            //         ],
+            //         "background": {
+            //             "activeOnStart": true
+            //         }
+            //     }
+            // ],
+            "group": "build",
+            "label": "package -Pnative (rxlight-api)",
+            "command": "${workspaceFolder}/mvnw package -Pnative -pl rxlight",
+            "dependsOn": ["install dependencies", "clean rxlight workspace"],
+            "dependsOrder": "sequence",
+            "windows": {
+                "command": "${workspaceFolder}/mvnw.cmd package -Pnative -pl rxlight"
+            }
+        },
+        {
+            "type": "shell",
+            "isBackground": false,
+            "group": "build",
+            "label": "clean rxlight workspace",
+            "command": "${workspaceFolder}/mvnw clean -pl rxlight",
+            "windows": {
+                "command": "${workspaceFolder}/mvnw.cmd clean -pl rxlight"
+            }
+        }
+    ],
+}

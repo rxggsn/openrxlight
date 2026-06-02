@@ -1,0 +1,52 @@
+[
+    {
+        "tag": "input",
+        "placeholder": {
+            "tag": "plain_text",
+            "content": "请输入"
+        },
+        "default_value": "",
+        "width": "fill",
+        "label": {
+            "tag": "plain_text",
+            "content": "字典名称"
+        },
+        "label_position": "left",
+        "required": true,
+        "name": "dict_name_${index_count}",
+        "margin": "0px 0px 0px 0px"
+    },
+    {
+        "tag": "input",
+        "placeholder": {
+            "tag": "plain_text",
+            "content": "请输入"
+        },
+        "default_value": "",
+        "width": "fill",
+        "label": {
+            "tag": "plain_text",
+            "content": "字典值"
+        },
+        "label_position": "left",
+        "required": true,
+        "name": "dict_value_${index_count}",
+        "margin": "0px 0px 0px 0px"
+    },
+    {
+        "tag": "input",
+        "placeholder": {
+            "tag": "plain_text",
+            "content": "请输入"
+        },
+        "default_value": "",
+        "width": "fill",
+        "label": {
+            "tag": "plain_text",
+            "content": "备注"
+        },
+        "label_position": "left",
+        "name": "notes_${index_count}",
+        "margin": "0px 0px 0px 0px"
+    }
+]
