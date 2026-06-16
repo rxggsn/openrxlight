@@ -58,7 +58,6 @@ public class EventBusBeanRegistry {
     EventBusPublisher eventBusPublisher(EventBusBuilder eventBusBuilder, NatsProperties nats, KafkaProperties kafka,
             RedisProperties redis)
             throws Exception {
-        log.info("Initialized EventBusPublisher with event buses");
         return new EventBusPublisher(this.eventBuses(eventBusBuilder, nats, kafka, redis));
     }
 }

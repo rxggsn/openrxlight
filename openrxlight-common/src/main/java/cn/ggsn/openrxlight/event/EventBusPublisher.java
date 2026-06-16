@@ -13,6 +13,7 @@ public class EventBusPublisher {
     private final List<EventBus> eventBuses;
 
     EventBusPublisher(List<EventBus> eventBuses) {
+        log.info("Initialized EventBusPublisher with event buses {}", Lists2.map(eventBuses, bus -> bus.eventBusType));
         this.eventBuses = eventBuses;
     }
 

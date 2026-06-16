@@ -192,32 +192,34 @@ public class Account extends BaseEntity {
 
     @SuppressWarnings("unchecked")
     public static List<Account> getAccountByExtInfo(AccountType accountType, SortedMap<String, String> extBody) {
-        if (extBody == null || extBody.isEmpty()) {
-            return Lists2.empty();
-        }
-        StringBuilder sqlBuilder = new StringBuilder(
-                "SELECT * FROM user_accounts WHERE account_type = ?1 ");
-        int index = 2;
-        for (String key : extBody.keySet()) {
-            sqlBuilder.append(" AND account_info->>'")
-                    .append(key)
-                    .append("' = ?")
-                    .append(index)
-                    .append(" ");
-            index++;
-        }
-        String sql = sqlBuilder.toString();
-        var query = Account.getEntityManager()
-                .createNativeQuery(sql, Account.class)
-                .setParameter(1, accountType.getValue());
-        index = 2;
-        for (String key : extBody.keySet()) {
-            query.setParameter(index, extBody.get(key));
-            index++;
-        }
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            if (extBody == null || extBody.isEmpty()) {
+                return Lists2.empty();
+            }
+            StringBuilder sqlBuilder = new StringBuilder(
+                    "SELECT * FROM user_accounts WHERE account_type = ?1 ");
+            int index = 2;
+            for (String key : extBody.keySet()) {
+                sqlBuilder.append(" AND account_info->>'")
+                        .append(key)
+                        .append("' = ?")
+                        .append(index)
+                        .append(" ");
+                index++;
+            }
+            String sql = sqlBuilder.toString();
+            var query = Account.getEntityManager()
+                    .createNativeQuery(sql, Account.class)
+                    .setParameter(1, accountType.getValue());
+            index = 2;
+            for (String key : extBody.keySet()) {
+                query.setParameter(index, extBody.get(key));
+                index++;
+            }
 
-        List<Account> resultList = query.getResultList();
-        return resultList;
+            List<Account> resultList = query.getResultList();
+            return resultList;
+        });
     }
 
     public AccountType checkAccountType() {
@@ -275,7 +277,8 @@ public class Account extends BaseEntity {
     }
 
     public static Account getAdminAccount() {
-        return Account.getById(1L).orElseThrow(() -> new BizException(AccountError.AccountNotExist, "Admin account"));
+        return QuarkusTransaction.joiningExisting().call(() -> Account.getById(1L)
+                .orElseThrow(() -> new BizException(AccountError.AccountNotExist, "Admin account")));
     }
 
     public static List<Account> listByRoleType(List<RoleType> roleTypes) {

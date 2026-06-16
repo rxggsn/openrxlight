@@ -7,9 +7,9 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     -- Context ID
     app_id INTEGER NOT NULL,
     -- Application ID
-    openrxlight_message_id VARCHAR(128) NOT NULL,
+    openrxlight_message_id TEXT NOT NULL,
     -- OpenRxLight Message ID
-    app_message_id VARCHAR(128) NOT NULL,
+    app_message_id TEXT NOT NULL,
     -- App Message ID
     content TEXT NULL,
     -- Message content
@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     -- Creation timestamp
     extra JSONB NULL
     -- Extra information (JSON)
+    message_type VARCHAR(12) NOT NULL,
+    -- Message Type
+    role VARCHAR(12) NOT NULL
+    -- Role Type
 );
 CREATE UNIQUE INDEX idx_chat_messages_unique ON chat_messages (
     app_id,
@@ -41,3 +45,5 @@ COMMENT ON COLUMN chat_messages.callback IS 'Callback information (JSON)';
 COMMENT ON COLUMN chat_messages.attachments IS 'Attachments information (JSON)';
 COMMENT ON COLUMN chat_messages.created_at IS 'Creation timestamp';
 COMMENT ON COLUMN chat_messages.extra IS 'Extra information (JSON)';
+COMMENT ON COLUMN chat_messages.message_type IS 'Message Type';
+COMMENT ON COLUMN chat_messages.role IS 'Role Type';

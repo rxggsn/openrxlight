@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ChatRequest implements Validate {
-    @Required
     private String query;
     private List<Message> messages;
     @Required
@@ -68,6 +67,8 @@ public class ChatRequest implements Validate {
         if (UserMessageType.CALLBACK.getName().equals(this.messageType)
                 && this.callback == null) {
             throw new IllegalArgumentException("callback data is required for CALLBACK message type");
+        } else if (!UserMessageType.CALLBACK.getName().equals(this.messageType) && StringUtils.isBlank(this.query)) {
+            throw new IllegalArgumentException("query is required");
         }
 
         if (this.callback != null) {

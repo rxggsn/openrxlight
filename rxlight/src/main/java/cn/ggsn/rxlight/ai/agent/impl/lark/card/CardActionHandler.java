@@ -33,8 +33,10 @@ import cn.ggsn.openrxlight.account.domain.Account;
 import cn.ggsn.openrxlight.account.error.AccountError;
 import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.domain.AccountType;
+import cn.ggsn.openrxlight.domain.ExternalAccount;
 import cn.ggsn.openrxlight.domain.ExternalAccountType;
 import cn.ggsn.openrxlight.errorx.BizException;
+import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.lang.Maps2;
 import cn.ggsn.openrxlight.model.billing.PaymentChannel;
 import cn.ggsn.openrxlight.model.chat.Callback;
@@ -50,6 +52,7 @@ import cn.ggsn.openrxlight.utils.QRCode;
 import cn.ggsn.openrxlight.web.AuthorizationToken;
 import cn.ggsn.rxlight.ai.agent.impl.lark.vo.ConfirmOrderPayment;
 import cn.ggsn.rxlight.ai.agent.impl.lark.vo.LarkContext;
+import cn.ggsn.rxlight.ai.domain.AppType;
 import cn.ggsn.rxlight.ai.domain.RxLightChatMessage;
 import cn.ggsn.rxlight.ai.event.CallbackEventType;
 import cn.ggsn.rxlight.orders.ApiEndpoint;
@@ -91,7 +94,8 @@ public class CardActionHandler extends P2CardActionTriggerHandler {
                 var account = Account.getAccountByExternalAccount(
                                 event.getEvent().getOperator().getOpenId(),
                                 ExternalAccountType.FEISHU,
-                                AccountType.OPERATOR)
+                                AppType.FEISHU.equals(context.getAppType()) ? AccountType.OPERATOR
+                                                : AccountType.CONSUMER)
                                 .orElseThrow(() -> new BizException(AccountError.ExternalAccountNotFound));
                 var triggerResp = new P2CardActionTriggerResponse();
                 UpgradeCreditPlanResponse payForBillResp = null;
@@ -189,6 +193,9 @@ public class CardActionHandler extends P2CardActionTriggerHandler {
                                 .role(RoleType.USER.getName())
                                 .createdAt(LocalDateTime.now())
                                 .appMessageId(event.getEvent().getContext().getOpenMessageId())
+                                .openrxlightAccountId(Lists2.first(Lists2.map(
+                                                account.getExternalAccounts(Lists2.of(ExternalAccountType.DEVELOPER)),
+                                                ExternalAccount::getExternalAccountId)))
                                 .callback(callback)
                                 .build());
                 this.context.hasRemaingMessages = true;

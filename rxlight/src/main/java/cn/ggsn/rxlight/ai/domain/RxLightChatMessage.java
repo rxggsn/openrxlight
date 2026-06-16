@@ -27,6 +27,7 @@ import cn.ggsn.rxlight.ai.event.CallbackEventType;
 import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.domain.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Table(name = "chat_messages")
 @EqualsAndHashCode(callSuper = true)
+@Entity
 public class RxLightChatMessage extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId; // User ID

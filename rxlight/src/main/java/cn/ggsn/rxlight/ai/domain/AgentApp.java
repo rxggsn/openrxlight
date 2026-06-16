@@ -9,8 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang.StringUtils;

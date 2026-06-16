@@ -2,14 +2,19 @@ package cn.ggsn.openrxlight.transaction.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.uuid.Generators;
+
 import cn.ggsn.openrxlight.domain.BaseEntity;
+import cn.ggsn.openrxlight.event.CloudEvent;
+import cn.ggsn.openrxlight.event.ContentType;
 import cn.ggsn.openrxlight.event.EventBusPublisher;
+import cn.ggsn.openrxlight.event.EventBusType;
 import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.lang.Maps2;
 import cn.ggsn.openrxlight.model.Currency;
 import cn.ggsn.openrxlight.response.PageResult;
 import cn.ggsn.openrxlight.utils.UUIdConverter;
 import io.quarkus.narayana.jta.QuarkusTransaction;
+import cn.ggsn.openrxlight.transaction.event.TransactionStatusChangeEvent;
 import cn.ggsn.openrxlight.transaction.service.payment.PaymentWrapper;
 import cn.ggsn.openrxlight.transaction.vo.TransactionFilter;
 import cn.ggsn.openrxlight.transaction.vo.TransactionInfo;
@@ -260,30 +265,17 @@ public class Transaction extends BaseEntity {
         this.save();
 
         if (Objects.nonNull(this.eventBusPublisher) && !Objects.equals(origin, transactionStatus)) {
-            // this.eventBusPublisher.publish(
-            // CloudEvent.builder().data(new TransactionStatusChangeEvent(
-            // origin,
-            // this.checkTransactionStatus(),
-            // this.transactionId,
-            // System.currentTimeMillis(),
-            // this.checkTransactionType(),
-            // this.transactionInfo.getDestination()))
-            // .datacontenttype(ContentType.APPLICATION_JSON.getType())
-            // .subject(EventConstants.TRANSACTION_STATUS_CHANGE_TOPIC)
-            // .source(EventConstants.TRANSACTION_GROUP_ID)
-            // .dataschema(EventConstants.TRANSACTION_GROUP_ID)
-            // .id(this.transactionId.toString())
-            // .build(),
-            // EventBusType.LOCAL);
-            // this.kafkaProducer.send(this.transactionId.toString(), new
-            // TransactionStatusChangeEvent(
-            // origin,
-            // this.checkTransactionStatus(),
-            // this.transactionId,
-            // System.currentTimeMillis(),
-            // this.checkTransactionType(),
-            // this.transactionInfo.getDestination()),
-            // TransactionStatusChangeEvent.TOPIC);
+            var event = new CloudEvent<>(UUIdConverter.replaceHyphenWithEmptyChar(this.transactionId), null,
+                    TransactionStatusChangeEvent.EVENT_TYPE,
+                    TransactionStatusChangeEvent.EVENT_TOPIC, ContentType.APPLICATION_JSON);
+            event.setData(new TransactionStatusChangeEvent(
+                    origin,
+                    this.checkTransactionStatus(),
+                    this.transactionId,
+                    System.currentTimeMillis(),
+                    this.checkTransactionType(),
+                    this.transactionInfo.getDestination()));
+            this.eventBusPublisher.publish(event, EventBusType.LOCAL);
         }
     }
 
@@ -393,13 +385,10 @@ public class Transaction extends BaseEntity {
             var update = cb.createCriteriaUpdate(Transaction.class);
             var root = update.from(Transaction.class);
             update.set("transactionInfo", transactionInfo)
-                  .where(cb.equal(root.get("transactionId"), this.transactionId));
+                    .where(cb.equal(root.get("transactionId"), this.transactionId));
             getEntityManager().createQuery(update).executeUpdate();
             this.transactionInfo = transactionInfo;
         });
     }
 
 }
-
-
-
