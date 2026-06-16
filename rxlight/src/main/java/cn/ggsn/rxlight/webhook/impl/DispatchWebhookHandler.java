@@ -1,68 +1,52 @@
 package cn.ggsn.rxlight.webhook.impl;
 
 import java.util.List;
-import java.util.SortedMap;
-import com.google.common.collect.Maps;
-
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import cn.ggsn.openrxlight.account.domain.Account;
-import cn.ggsn.openrxlight.config.Config;
-import cn.ggsn.openrxlight.config.OpenRxLightApiConfig;
-import cn.ggsn.openrxlight.domain.AccountType;
+import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.event.WebhookEvent;
 import cn.ggsn.openrxlight.event.order.dispatch.DispatchResultEvent;
 import cn.ggsn.openrxlight.lang.Lists2;
-import cn.ggsn.openrxlight.model.order.OpsOrder;
 import cn.ggsn.openrxlight.notification.NotificationReq;
 import cn.ggsn.openrxlight.notification.NotificationService;
-import cn.ggsn.openrxlight.response.chat.ChatResponse.Attachment;
+import cn.ggsn.openrxlight.notification.domain.NtySceneType;
 import cn.ggsn.openrxlight.utils.JsonUtils;
+import cn.ggsn.openrxlight.web.RoleType;
 import cn.ggsn.rxlight.webhook.WebhookEventHandler;
 import jakarta.inject.Singleton;
+import lombok.RequiredArgsConstructor;
 
 @Singleton
+@RequiredArgsConstructor
 class DispatchWebhookHandler implements WebhookEventHandler {
-    private final Config config;
     private final NotificationService notificationService;
-
-    public DispatchWebhookHandler(NotificationService notificationService, OpenRxLightApiConfig config) {
-        this.notificationService = notificationService;
-        this.config = Config.builder()
-                .clientId(config.clientId())
-                .clientSecret(config.clientSecret())
-                .signaturePriKey(config.signaturePrivKey())
-                .signaturePubKey(config.signaturePubKey())
-                .build();
-    }
+    private final OpenRxLightV2 openRxLightV2;
 
     @Override
     public void handleEvent(WebhookEvent event) {
         try {
-            switch (event.getEventType()) {
-                case WebhookEvent.Type.DISPATCH_RESULT:
-                    DispatchResultEvent dispatchResultEvent = event.getBody(DispatchResultEvent.class, this.config);
-                    SortedMap<String, String> extInfo = Maps.newTreeMap();
-                    NotificationReq req = NotificationReq.builder()
-                            .content(dispatchResultEvent.getResponse().getContent())
-                            .attachments(Lists2.map(dispatchResultEvent.getResponse().getAttachments(),
-                                    Attachment::getFileId))
-                            .build();
-                    switch (dispatchResultEvent.getType()) {
-                        case DispatchResultEvent.CREATE_ORDER_TYPE:
-                            OpsOrder order = JsonUtils.fromJson(dispatchResultEvent.getBody(), OpsOrder.class);
-                            extInfo.put("phone_no", order.getPhoneNo());
-                            break;
-                        case DispatchResultEvent.FINISH_ORDER_TYPE:
-                            OpsOrder finishedOrder = JsonUtils.fromJson(dispatchResultEvent.getBody(), OpsOrder.class);
-                            extInfo.put("phone_no", finishedOrder.getPhoneNo());
-                            break;
-                        default:
-                            break;
-                    }
-                    List<Account> accounts = Account.getAccountByExtInfo(AccountType.CONSUMER, extInfo);
+            var resultEvent = event.getBody(DispatchResultEvent.class, this.openRxLightV2.getConfig());
 
-                    Lists2.foreach(accounts, account -> {
-                        this.notificationService.sendToAccount(req, account);
-                    });
+            switch (resultEvent.getType()) {
+                case DispatchResultEvent.SEMI_AUTO:
+
+                    List<Account> executors = Account.listByRoleType(Lists2.of(RoleType.EXECUTOR));
+
+                    if (Lists2.isEmpty(executors)) {
+                        Lists2.foreach(Account.listByRoleType(Lists2.of(RoleType.ADMIN)), account -> {
+                            this.notificationService.sendToAccount(NotificationReq.builder()
+                                    .sceneType(NtySceneType.ADMIN_NTY)
+                                    .content(JsonNodeFactory.instance.textNode(String.format(
+                                            "站点[%s]目前无运营人员可为用户服务，需立即补充", resultEvent.getStation().getName())))
+                                    .build(), account);
+                        });
+                    } else {
+                        this.notificationService.batchSendToAccounts(NotificationReq.builder()
+                                .sceneType(NtySceneType.ORDER_START_CHARGE)
+                                .content(JsonUtils.toJsonNode(resultEvent))
+                                .build(), executors);
+                    }
+
                     break;
 
                 default:

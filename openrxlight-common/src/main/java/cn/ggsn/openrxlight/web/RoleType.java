@@ -6,6 +6,7 @@ public enum RoleType {
     ANONYMOUS(0),
     GUEST(1),
     OPERATOR(2),
+    EXECUTOR(3),
     ADMIN(99),
     ;
 

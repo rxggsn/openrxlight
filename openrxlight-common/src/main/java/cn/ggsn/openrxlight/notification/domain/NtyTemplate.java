@@ -155,15 +155,17 @@ public class NtyTemplate extends BaseEntity {
                                 .getResultList();
         }
 
-        public static List<NtyTemplate> getBySceneTypeAndAccountType(NtySceneType sceneType, AccountType accountType) {
+        public static List<NtyTemplate> getBySceneTypeAndAccountTypes(NtySceneType sceneType,
+                        List<AccountType> accountTypes) {
                 CriteriaBuilder cb = NtyTemplate.getEntityManager().getCriteriaBuilder();
                 var query = cb.createQuery(NtyTemplate.class);
                 var root = query.from(NtyTemplate.class);
 
                 return NtyTemplate.getEntityManager().createQuery(
                                 query.select(root).where(cb.and(
-                                                cb.equal(root.get("sceneType"), sceneType.getCode()),
-                                                cb.equal(root.get("accountType"), accountType.getValue()),
+                                                root.get("sceneType").equalTo(sceneType.getCode()),
+                                                root.get("accountType")
+                                                                .in(Lists2.map(accountTypes, ty -> ty.getValue())),
                                                 cb.equal(root.get("deleted"), false),
                                                 cb.equal(root.get("status"), MessageStatus.RUN.getCode()))))
                                 .getResultList();

@@ -2,35 +2,34 @@ package cn.ggsn.openrxlight.model.order;
 
 import java.util.Objects;
 
-import lombok.Getter;
+import com.fasterxml.jackson.databind.EnumNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.EnumNaming;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+@EnumNaming(EnumNamingStrategies.LowerCaseStrategy.class)
 public enum ChargeBasicType {
-    BASIC_UNSPECIFIED(0, "未知"),
-    BASIC_SOC(1, "按充电比率"),
-    BASIC_FEE(2, "按金额充电"),
-    BASIC_TIME(3, "按时间充电"),
+    UNSPECIFIED(0, "未知"),
+    SOC(1, "按充电比率"),
+    FEE(2, "按金额充电"),
     ;
 
-    @Getter
     private final int value;
 
-    @Getter
     private final String message;
-
-    ChargeBasicType(int value, String message) {
-        this.value = value;
-        this.message = message;
-    }
 
     public static ChargeBasicType fromValue(Integer chargedBasicType) {
         if (Objects.isNull(chargedBasicType)) {
-            return BASIC_UNSPECIFIED;
+            return UNSPECIFIED;
         }
         for (ChargeBasicType type : ChargeBasicType.values()) {
             if (type.value == chargedBasicType) {
                 return type;
             }
         }
-        return BASIC_UNSPECIFIED;
+        return UNSPECIFIED;
     }
 }

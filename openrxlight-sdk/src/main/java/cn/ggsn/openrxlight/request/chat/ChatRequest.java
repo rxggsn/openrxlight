@@ -27,7 +27,7 @@ public class ChatRequest implements Validate {
     @Required
     private String userId;
     @Required
-    private String messageId; // ONLY FOR internal use, DO NOT USE THIS FIELD IN YOUR REQUEST!!!
+    private String messageId;
     private String contextId;
     @Required
     private Integer scenario; // ONLY FOR internal use, DO NOT USE THIS FIELD IN YOUR REQUEST!!!

@@ -14,6 +14,7 @@ public enum NtySceneType {
     VERIFY_CODE((short) 6, "验证码通知"),
     WEBHOOK((short) 7, "Webhook通知"),
     DI_CALLBACK((short) 8, "DHForce AI 回调通知"),
+    ADMIN_NTY((short) 9, "管理员通知"),
     ;
 
     private final short code;

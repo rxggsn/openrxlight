@@ -16,4 +16,7 @@ public interface NotificationSender {
 
     boolean supports(ChannelConfiguration.ChannelType checkChannelType);
 
+    List<MessageRecord> batchSendResponse(NotificationReq notificationReq, ChannelConfiguration config, List<NtyTemplate> list,
+            List<Account> accounts);
+
 }

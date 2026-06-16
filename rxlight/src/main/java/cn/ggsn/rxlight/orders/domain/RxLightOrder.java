@@ -10,10 +10,14 @@ import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import cn.ggsn.openrxlight.domain.BaseEntity;
 import cn.ggsn.openrxlight.model.Currency;
+import cn.ggsn.openrxlight.model.order.OpsOrder.OrderStatus;
 import cn.ggsn.openrxlight.model.order.OrderType;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -24,6 +28,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -35,7 +40,7 @@ import lombok.NoArgsConstructor;
 public class RxLightOrder extends BaseEntity {
 
     @Getter
-    @AllArgsConstructor
+    @RequiredArgsConstructor
     public enum PayType {
         UNSPECIFIED((short) 0, "未知"),
         WALLET((short) 1, "余额支付"),
@@ -76,7 +81,7 @@ public class RxLightOrder extends BaseEntity {
     }
 
     @Getter
-    @AllArgsConstructor
+    @RequiredArgsConstructor
     public enum AdditionalFeeTypeEnum {
         UNSPECIFIC("未知", (short) 0),
         GUN_ACTION_SERVICE("代插拔枪服务费", (short) 1),
@@ -92,6 +97,7 @@ public class RxLightOrder extends BaseEntity {
     @AllArgsConstructor
     @Builder
     @EqualsAndHashCode(of = "feeType")
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class AdditionalFee {
         private int value; // 附加费用金额, 单位分
         private int feeType; // 附加费用类型
@@ -104,6 +110,16 @@ public class RxLightOrder extends BaseEntity {
             }
             return AdditionalFeeTypeEnum.UNSPECIFIC;
         }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public static class AdditionalInfo {
+        private Integer stopReason;
+        private List<Long> deviceIds;
     }
 
     @Getter
@@ -189,11 +205,6 @@ public class RxLightOrder extends BaseEntity {
     @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     private List<AdditionalFee> additionalFees;
 
-    @Column(name = "device_ids", nullable = true)
-    // @JdbcType(org.hibernate.dialect.type.PostgreSQLArrayJdbcType.class)
-    @JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
-    private List<Long> deviceIds;
-
     @Column(name = "source_type", nullable = false)
     private Short sourceType;
 
@@ -208,15 +219,23 @@ public class RxLightOrder extends BaseEntity {
     private Integer preFee; // prepay fee, unit cent
     @Column(name = "ccy_type", nullable = false)
     private String currencyType; // ISO 4217 Currency Code
+    @Column(name = "payment_channel", nullable = false)
+    private Short paymentChannel;
+    @Column(name = "additional_info", nullable = false)
+    @JdbcType(org.hibernate.dialect.type.PostgreSQLJsonPGObjectJsonbType.class)
+    @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    private AdditionalInfo additionalInfo;
 
     public static Optional<RxLightOrder> getByThirdPartyOrderNo(String orderNo) {
-        CriteriaBuilder cb = RxLightOrder.getEntityManager().getCriteriaBuilder();
-        var query = cb.createQuery(RxLightOrder.class);
-        var root = query.from(RxLightOrder.class);
-        Optional<RxLightOrder> result = RxLightOrder.getEntityManager()
-                .createQuery(query.select(root).where(cb.equal(root.get("third_party_order_no"), orderNo)))
-                .getResultStream().findFirst();
-        return result;
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            CriteriaBuilder cb = RxLightOrder.getEntityManager().getCriteriaBuilder();
+            var query = cb.createQuery(RxLightOrder.class);
+            var root = query.from(RxLightOrder.class);
+            Optional<RxLightOrder> result = RxLightOrder.getEntityManager()
+                    .createQuery(query.select(root).where(cb.equal(root.get("third_party_order_no"), orderNo)))
+                    .getResultStream().findFirst();
+            return result;
+        });
     }
 
     @JsonIgnore
@@ -238,5 +257,37 @@ public class RxLightOrder extends BaseEntity {
                 return null;
         }
 
+    }
+
+    public static Optional<RxLightOrder> getByOrderNo(String orderNo) {
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            CriteriaBuilder cb = RxLightOrder.getEntityManager().getCriteriaBuilder();
+            var query = cb.createQuery(RxLightOrder.class);
+            var root = query.from(RxLightOrder.class);
+            Optional<RxLightOrder> result = RxLightOrder.getEntityManager()
+                    .createQuery(query.select(root).where(cb.equal(root.get("torder_no"), orderNo)))
+                    .getResultStream().findFirst();
+            return result;
+        });
+    }
+
+    public void updateStatus(OrderStatus status) {
+        QuarkusTransaction.joiningExisting().run(() -> {
+            CriteriaBuilder cb = RxLightOrder.getEntityManager().getCriteriaBuilder();
+            var update = cb.createCriteriaUpdate(RxLightOrder.class);
+            var root = update.from(RxLightOrder.class);
+            this.status = status.getValue();
+            if (status.isFinished()) {
+                this.chargeEndTime = LocalDateTime.now();
+                update.set("status", status.getValue())
+                        .set("chargeEndTime", LocalDateTime.now())
+                        .where(cb.equal(root.get("orderNo"), this.orderNo));
+            } else {
+                update.set("status", status.getValue())
+                        .where(cb.equal(root.get("orderNo"), this.orderNo));
+            }
+
+            RxLightOrder.getEntityManager().createQuery(update).executeUpdate();
+        });
     }
 }

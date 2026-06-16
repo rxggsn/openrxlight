@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.NamingBase;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -74,6 +75,15 @@ public class JsonUtils {
 
     public static <T> String toJson(T object, ObjectMapper objectMapper) {
         try {
+            if (object instanceof JsonNode) {
+                if (((JsonNode) object).isTextual()) {
+                    return ((JsonNode) object).asText();
+                } else if (((JsonNode) object).isBoolean()) {
+                    return Boolean.toString(((JsonNode) object).asBoolean());
+                } else {
+                    return ((JsonNode) object).toString();
+                }
+            }
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             log.error("Error while serializing object", e);
@@ -236,6 +246,8 @@ public class JsonUtils {
         } else if (target.isTextual() && base.isTextual()) {
             // concatenate strings
             return JsonNodeFactory.instance.textNode(target.asText() + base.asText());
+        } else if (base.isNull()) {
+            return target;
         } else {
             return base;
         }
@@ -264,7 +276,7 @@ public class JsonUtils {
             Arrays.stream(clazz.getDeclaredFields()).forEach(field -> {
                 field.setAccessible(true);
                 try {
-                    result.put(strategy.translate(field.getName()), field.get(obj));
+                    result.put(strategy.translate(field.getName()), toJsonNode(field.get(obj)));
                 } catch (IllegalAccessException e) {
                     log.error("Error accessing field: " + field.getName(), e);
                 }
@@ -278,7 +290,23 @@ public class JsonUtils {
         if (map == null) {
             return null;
         }
-        JsonNode jsonNode = toJsonNode(map);
-        return fromJson(jsonNode, clazz);
+
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        map.forEach((key, val) -> {
+            objectNode.replace(key, toJsonNode(val));
+        });
+        return fromJson(objectNode, clazz);
+    }
+
+    public static <T> T fromMapJsonNode(Map<String, JsonNode> map, Class<T> clazz) {
+        if (map == null) {
+            return null;
+        }
+
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        map.forEach((key, val) -> {
+            objectNode.replace(key, val);
+        });
+        return fromJson(objectNode, clazz);
     }
 }

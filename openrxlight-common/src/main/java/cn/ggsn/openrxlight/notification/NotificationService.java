@@ -30,8 +30,8 @@ public class NotificationService {
     public void sendToAccount(NotificationReq req, Account account) {
         req.validate();
 
-        List<NtyTemplate> templates = NtyTemplate.getBySceneTypeAndAccountType(req.getSceneType(),
-                AccountType.fromValue(account.getAccountType()));
+        List<NtyTemplate> templates = NtyTemplate.getBySceneTypeAndAccountTypes(req.getSceneType(),
+                Lists2.of(AccountType.fromValue(account.getAccountType())));
         List<ChannelConfiguration> channelConfigurations = ChannelConfiguration
                 .findByIds(Lists2.map(templates, NtyTemplate::getConfigId));
         var group = Lists2.group(templates, NtyTemplate::getConfigId);
@@ -74,5 +74,49 @@ public class NotificationService {
         return this.senders.stream()
                 .filter(sender -> sender.supports(config.checkChannelType()))
                 .findFirst();
+    }
+
+    public void batchSendToAccounts(NotificationReq notificationReq, List<Account> accounts) {
+        notificationReq.validate();
+
+        List<NtyTemplate> templates = NtyTemplate.getBySceneTypeAndAccountTypes(notificationReq.getSceneType(),
+                Lists2.map(accounts, account -> AccountType.fromValue(account.getAccountType())));
+        List<ChannelConfiguration> channelConfigurations = ChannelConfiguration
+                .findByIds(Lists2.map(templates, NtyTemplate::getConfigId));
+        var group = Lists2.group(templates, NtyTemplate::getConfigId);
+
+        List<CompletableFuture<List<MessageRecord>>> futures = Lists2.mapNotNull(channelConfigurations, config -> {
+            return this.selectSender(config).map(
+                    sender -> {
+                        return CompletableFuture
+                                .supplyAsync(() -> sender.batchSendResponse(notificationReq, config,
+                                        group.get(config.id), accounts));
+                    }).orElse(null);
+        });
+        if (Lists2.isEmpty(futures)) {
+            return;
+        }
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenAccept((result) -> {
+                log.debug("Notification batch sent to accounts completed.");
+                return;
+            }).get();
+
+            var records = Lists2.flatMapNotNull(futures, future -> {
+                try {
+                    return future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error("Failed to batch send notification to account {}", e.getMessage());
+                    return null;
+                }
+            });
+
+            Lists2.foreach(records, r -> {
+                r.setCreatedTime(LocalDateTime.now());
+                r.save();
+            });
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Failed to send notification to account {}", e.getMessage());
+        }
     }
 }

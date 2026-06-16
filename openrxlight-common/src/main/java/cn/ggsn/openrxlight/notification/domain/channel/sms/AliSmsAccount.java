@@ -1,5 +1,8 @@
 package cn.ggsn.openrxlight.notification.domain.channel.sms;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import cn.ggsn.openrxlight.notification.domain.ChannelConfiguration;
 import cn.ggsn.openrxlight.notification.domain.NtySceneType;
 import lombok.AllArgsConstructor;
@@ -23,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class AliSmsAccount extends SmsAccount implements ChannelConfiguration.ChannelAccount {
     /**
      * api相关
@@ -38,9 +42,6 @@ public class AliSmsAccount extends SmsAccount implements ChannelConfiguration.Ch
     private String signName;
 
     private String templateCode;
-
-    private Long supplierId;
-    private String supplierName;
 
     @Override
     public boolean supports(NtySceneType sceneType) {

@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -143,12 +145,9 @@ public class ChatResponse {
             if (this.usage == null) {
                 this.usage = other.usage;
             } else {
-                this.usage.setPromptTokens(other.usage.getPromptTokens() != null
-                        ? other.usage.getPromptTokens() + this.usage.getPromptTokens()
-                        : this.usage.getPromptTokens());
-                this.usage.setTotalTokens(other.usage.getTotalTokens() != null
-                        ? other.usage.getTotalTokens() + this.usage.getTotalTokens()
-                        : this.usage.getTotalTokens());
+                this.usage.setTotalCredit(other.usage.getTotalCredit() != null
+                        ? other.usage.getTotalCredit().add(this.usage.getTotalCredit())
+                        : this.usage.getTotalCredit());
             }
         }
         if (other.getChoices() != null && !other.getChoices().isEmpty()) {
@@ -205,8 +204,9 @@ public class ChatResponse {
     }
 
     public boolean isStopped() {
-        if (this.choices == null || this.choices.isEmpty()) {
-            return false;
+        if ((this.choices == null || this.choices.isEmpty())
+                && (this.callback == null || StringUtils.isBlank(this.callback.getCallbackId()))) {
+            return true;
         }
 
         return this.choices.stream().anyMatch(choice -> "stop".equals(choice.getFinishReason()));

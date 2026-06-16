@@ -2,7 +2,6 @@ package cn.ggsn.rxlight.ai;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-
 import cn.ggsn.openrxlight.account.error.AccountError;
 import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.domain.AccountType;
@@ -77,19 +76,20 @@ public class ApiEndpoint {
                 .build();
         msg.save();
 
-        var finalResult = app.handleMessage(msg).reduce(null, (acc, item) -> {
-            if (acc == null) {
-                acc = item;
-            } else {
-                acc.merge(item);
-            }
-            sink.send(this.sse.newEvent(JsonUtils.toJson(acc)));
-            return acc;
-        });
+        var finalResult = app.handleMessage(msg)
+                .reduce((acc, item) -> {
+                    if (acc == null) {
+                        acc = item;
+                    } else {
+                        acc.merge(item);
+                    }
+                    sink.send(this.sse.newEvent(JsonUtils.toJson(acc)));
+                    return acc;
+                }).blockingGet();
 
         RxLightChatMessage.builder()
                 .appMessageId(appMessageId)
-                .content(finalResult.getContent().toPrettyString())
+                .content(JsonUtils.toJson(finalResult.getContent()))
                 .contextId(finalResult.getContextId())
                 .createdAt(LocalDateTime.now())
                 .appId(app.getId())

@@ -176,16 +176,18 @@ public class Account extends BaseEntity {
 
     public static Optional<Account> getAccountByExternalAccount(String externalAccountId,
             ExternalAccountType externalAccountType, AccountType accountType) {
-        if (StringUtils.isBlank(externalAccountId)) {
-            return Optional.empty();
-        }
-        String sql = String.format(
-                "SELECT * FROM user_accounts WHERE external_accounts @> '[{\"external_account_id\": \"%s\", \"account_type\": \"%s\"}]' AND account_type = ?1",
-                externalAccountId, externalAccountType.name().toLowerCase());
-        Account result = (Account) Account.getEntityManager().createNativeQuery(sql, Account.class)
-                .setParameter(1, accountType.getValue())
-                .getSingleResultOrNull();
-        return Optional.ofNullable(result);
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            if (StringUtils.isBlank(externalAccountId)) {
+                return Optional.empty();
+            }
+            String sql = String.format(
+                    "SELECT * FROM user_accounts WHERE external_accounts @> '[{\"external_account_id\": \"%s\", \"account_type\": \"%s\"}]' AND account_type = ?1",
+                    externalAccountId, externalAccountType.name().toLowerCase());
+            Account result = (Account) Account.getEntityManager().createNativeQuery(sql, Account.class)
+                    .setParameter(1, accountType.getValue())
+                    .getSingleResultOrNull();
+            return Optional.ofNullable(result);
+        });
     }
 
     @SuppressWarnings("unchecked")
@@ -274,5 +276,17 @@ public class Account extends BaseEntity {
 
     public static Account getAdminAccount() {
         return Account.getById(1L).orElseThrow(() -> new BizException(AccountError.AccountNotExist, "Admin account"));
+    }
+
+    public static List<Account> listByRoleType(List<RoleType> roleTypes) {
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            CriteriaBuilder cb = Account.getEntityManager().getCriteriaBuilder();
+            var cq = cb.createQuery(Account.class);
+            var root = cq.from(Account.class);
+            return Account.getEntityManager()
+                    .createQuery(cq.select(root)
+                            .where(root.get("roleTypes").in(Lists2.map(roleTypes, RoleType::getValue))))
+                    .getResultList();
+        });
     }
 }

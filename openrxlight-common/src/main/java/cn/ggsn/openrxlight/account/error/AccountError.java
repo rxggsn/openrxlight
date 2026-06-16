@@ -19,6 +19,7 @@ public enum AccountError implements ErrorCode {
     SecretInvalid(Constants.CMS_BIZ_CODE + 11, "Secret invalid"),
     PermissionDenied(Constants.CMS_BIZ_CODE + 12, "Permission denied: %s"),
     PasswordIncorrect(Constants.CMS_BIZ_CODE + 13, "Password incorrect"),
+    NotFoundPlateNo(Constants.CMS_BIZ_CODE + 14, "plate no [%s] not found"),
     ;
 
     private final int value;

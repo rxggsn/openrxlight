@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 @JsonNaming(SnakeCaseStrategy.class)
 public class ConfirmPlateNo {
+    public static final String CALLBACK_TYPE = "confirm_plate_no";
     private StationInfo station;
     private StationSpace space;
-
 }

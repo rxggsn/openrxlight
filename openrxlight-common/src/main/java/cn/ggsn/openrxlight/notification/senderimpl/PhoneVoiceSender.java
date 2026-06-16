@@ -44,4 +44,11 @@ class PhoneVoiceSender implements NotificationSender {
         return ChannelType.PHONE_VOICE.equals(checkChannelType);
     }
 
+    @Override
+    public List<MessageRecord> batchSendResponse(NotificationReq notificationReq, ChannelConfiguration config,
+            List<NtyTemplate> list, List<Account> accounts) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'batchSendResponse'");
+    }
+
 }

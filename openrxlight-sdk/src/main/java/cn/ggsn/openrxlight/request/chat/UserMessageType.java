@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum UserMessageType {
+    UNKNOWN("unknown", "未知"),
     TEXT("text", "文字"),
     FILE("file", "文件"),
     AUDIO("audio", "语音"),

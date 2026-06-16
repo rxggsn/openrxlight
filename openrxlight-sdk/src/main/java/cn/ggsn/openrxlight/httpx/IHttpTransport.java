@@ -1,9 +1,9 @@
 package cn.ggsn.openrxlight.httpx;
 
-import java.util.stream.Stream;
+import io.reactivex.Flowable;
 
 public interface IHttpTransport {
     RawResponse execute(RawRequest request) throws Exception;
 
-    <T> Stream<T> executeSse(RawRequest request, Class<T> clazz) throws Exception;
+    <T> Flowable<T> executeSse(RawRequest request, Class<T> clazz) throws Exception;
 }

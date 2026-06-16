@@ -46,7 +46,7 @@ class AccountHook {
                                         .builder()
                                         .displayName(account.getDisplayName())
                                         .accountType(account.getAccountType())
-                                        .externalAccounts(Lists2.map(Lists2.map(
+                                        .externalAccounts(Lists2.map(Lists2.mapNotNull(
                                                         account.getExternalAccounts(),
                                                         ea -> JsonUtils.fromMap(ea, ExternalAccount.class)),
                                                         ea -> CreateAccountRequest.ExternalAccountInfo.builder()

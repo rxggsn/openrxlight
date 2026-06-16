@@ -1,6 +1,5 @@
 package cn.ggsn.rxlight.orders.response;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.AllArgsConstructor;
@@ -14,9 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonNaming(com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PayForOrderResponse {
-    @JsonUnwrapped
     private PayByQrCode payByQrCode;
-    @JsonUnwrapped
     private PayByPrepay payByPrepay;
 
     @Data

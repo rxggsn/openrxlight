@@ -1,11 +1,19 @@
 package cn.ggsn.rxlight.orders;
 
+import java.util.Currency;
+import java.util.Locale;
 import java.util.Objects;
 
 import cn.ggsn.openrxlight.account.domain.Account;
 import cn.ggsn.openrxlight.account.error.AccountError;
+import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.errorx.BizException;
 import cn.ggsn.openrxlight.errorx.order.OrderErrorCode;
+import cn.ggsn.openrxlight.model.billing.PaymentChannel;
+import cn.ggsn.openrxlight.model.order.PayType;
+import cn.ggsn.openrxlight.model.order.OpsOrder.OrderStatus;
+import cn.ggsn.openrxlight.model.station.StationSpace;
+import cn.ggsn.openrxlight.request.stations.GetStationSpaceRequest;
 import cn.ggsn.openrxlight.transaction.domain.ChannelType;
 import cn.ggsn.openrxlight.transaction.domain.CounterpartyTransaction;
 import cn.ggsn.openrxlight.transaction.domain.PaymentCounterpartyAccount;
@@ -14,9 +22,13 @@ import cn.ggsn.openrxlight.transaction.domain.TransactionType;
 import cn.ggsn.openrxlight.transaction.error.TpsErrorCode;
 import cn.ggsn.openrxlight.transaction.service.payment.PaymentWrapper;
 import cn.ggsn.openrxlight.web.AuthorizationToken;
+import cn.ggsn.rxlight.account.domain.ConsumerAccountExtInfo;
 import cn.ggsn.rxlight.orders.domain.RxLightOrder;
+import cn.ggsn.rxlight.orders.request.CreateOrderRequest;
 import cn.ggsn.rxlight.orders.request.PayForOrderRequest;
+import cn.ggsn.rxlight.orders.response.CreateOrderResponse;
 import cn.ggsn.rxlight.orders.response.PayForOrderResponse;
+import cn.ggsn.rxlight.system.Sequence;
 import cn.ggsn.openrxlight.transaction.pay.domain.Counterparty;
 import cn.ggsn.openrxlight.transaction.pay.wechat.domain.WxNativePayAdditionalInfo;
 import cn.ggsn.openrxlight.transaction.vo.TransactionInfo;
@@ -31,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 public class ApiEndpoint {
 
         private final PaymentWrapper paymentWrapper;
+        private final OpenRxLightV2 openRxLightV2;
 
         @POST
         @Path("/pay")
@@ -38,24 +51,27 @@ public class ApiEndpoint {
                 AuthorizationToken token = (AuthorizationToken) securityContext;
                 request.validate();
 
-                RxLightOrder order = RxLightOrder.findById(request.getOrderId());
+                RxLightOrder order = RxLightOrder.getByOrderNo(request.getOrderNo()).orElseThrow(
+                                () -> new BizException(OrderErrorCode.NotFoundOrder, request.getOrderNo()));
                 if (!Objects.equals(token.getAccountId(), order.getAccountId())) {
-                        throw new BizException(OrderErrorCode.NotFoundOrder, request.getOrderId());
+                        throw new BizException(OrderErrorCode.NotFoundOrder, request.getOrderNo());
                 }
 
                 ChannelType channelType = ChannelType.UNSPECIFIED;
-                TransactionType transactionType = TransactionType.fromValue(request.getTransactionType());
-                switch (transactionType) {
-                        case WECHAT_PAY:
-                        case WECHAT_REFUND:
-                        case WALLET_WITHDRAW:
-                        case WALLET_DEPOSIT:
-                                channelType = ChannelType.FUIOU_PAY;
+                TransactionType transactionType = TransactionType.UNSPECIFIED;
+                var payType = PayType.fromValue(order.getPayType());
+                switch ((payType)) {
+                        case PRE_FEE:
+                        case PWD_FREE:
+                                switch (PaymentChannel.fromValue(order.getPaymentChannel())) {
+                                        case WECHAT:
+                                                channelType = ChannelType.FUIOU_PAY;
+                                                transactionType = TransactionType.WECHAT_PAY;
+                                        case ALIPAY:
+                                                channelType = ChannelType.FUIOU_PAY;
+                                }
                                 break;
 
-                        case WALLET_PAY:
-                                channelType = ChannelType.WALLET;
-                                break;
                         default:
                                 break;
                 }
@@ -80,6 +96,8 @@ public class ApiEndpoint {
                                 new WxNativePayAdditionalInfo());
                 transaction.updateCounterpartyTxnIdAndStatusById(counterpartyTxn.getStatus(),
                                 counterpartyTxn.getCounterpartyTxnId(), counterpartyTxn.getChannelTransactionId());
+                order.setTransactionId(transaction.getTransactionId());
+                order.save();
 
                 String description = "";
                 switch (transactionType) {
@@ -107,5 +125,41 @@ public class ApiEndpoint {
                                                                 .getQrCode(),
                                                 description))
                                 .build();
+        }
+
+        @POST
+        public CreateOrderResponse createOrder(CreateOrderRequest request, @Context SecurityContext securityContext)
+                        throws Exception {
+                AuthorizationToken token = (AuthorizationToken) securityContext;
+                request.validate();
+
+                var account = Account.getByAccountId(token.getAccountId(), token.getAccountType())
+                                .orElseThrow(() -> new BizException(AccountError.AccountNotExist,
+                                                token.getAccountId().toString()));
+                StationSpace stationSpace = this.openRxLightV2.stations()
+                                .getStationSpace(GetStationSpaceRequest.builder()
+                                                .spaceId(request.getSpaceId())
+                                                .stationId(request.getStationId())
+                                                .build());
+                var extInfo = (ConsumerAccountExtInfo) account.getAccountInfo();
+                var carInfo = extInfo.getCarInfo(request.getPlateNo()).orElseThrow(
+                                () -> new BizException(AccountError.NotFoundPlateNo, request.getPlateNo()));
+                var order = RxLightOrder.builder()
+                                .accountId(token.getAccountId())
+                                .orderNo(Sequence.generateCode("order"))
+                                .payType((short) request.getPayType().getValue())
+                                .preFee(request.getPrepay())
+                                .plateNo(request.getPlateNo())
+                                .stationId(request.getStationId())
+                                .spaceId(request.getSpaceId())
+                                .rangeId(stationSpace.getRangeId())
+                                .spaceNo(stationSpace.getSpaceNo())
+                                .carModelId(carInfo.getModelId() != null ? carInfo.getModelId().toString() : null)
+                                .currencyType(Currency.getInstance(Locale.CHINA).getCurrencyCode())
+                                .status(OrderStatus.CREATED.getValue())
+                                .paymentChannel(request.getPaymentChannel().getValue())
+                                .build();
+                order.save();
+                return CreateOrderResponse.builder().orderNo(order.getOrderNo()).build();
         }
 }

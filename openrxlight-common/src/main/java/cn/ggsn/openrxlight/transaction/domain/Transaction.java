@@ -377,4 +377,29 @@ public class Transaction extends BaseEntity {
         });
     }
 
+    public static Optional<Transaction> findByChannelTransactionId(String channelTransactionId) {
+        return QuarkusTransaction.joiningExisting().call(() -> {
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            var query = cb.createQuery(Transaction.class);
+            var root = query.from(Transaction.class);
+            query.select(root).where(cb.equal(root.get("channelTransactionId"), channelTransactionId));
+            return getEntityManager().createQuery(query).getResultStream().findFirst();
+        });
+    }
+
+    public void updateTransactionInfo(TransactionInfo transactionInfo) {
+        QuarkusTransaction.joiningExisting().run(() -> {
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+            var update = cb.createCriteriaUpdate(Transaction.class);
+            var root = update.from(Transaction.class);
+            update.set("transactionInfo", transactionInfo)
+                  .where(cb.equal(root.get("transactionId"), this.transactionId));
+            getEntityManager().createQuery(update).executeUpdate();
+            this.transactionInfo = transactionInfo;
+        });
+    }
+
 }
+
+
+

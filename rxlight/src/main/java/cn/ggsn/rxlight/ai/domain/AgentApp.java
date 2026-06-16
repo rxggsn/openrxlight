@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.dialect.type.PostgreSQLJsonPGObjectJsonbType;
@@ -21,26 +23,30 @@ import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.audio.AudioRecognizer;
 import cn.ggsn.openrxlight.errorx.BizException;
+import cn.ggsn.openrxlight.errorx.CommonErrorCode;
 import cn.ggsn.openrxlight.errorx.ErrorResponse;
 import cn.ggsn.openrxlight.errorx.billing.BillingErrorCode;
 import cn.ggsn.openrxlight.event.EventBusPublisher;
-import cn.ggsn.openrxlight.event.chat.CallbackEventType;
 import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.lang.Maps2;
 import cn.ggsn.openrxlight.model.billing.BillingInfo;
 import cn.ggsn.openrxlight.model.billing.PaymentChannel;
 import cn.ggsn.openrxlight.model.chat.Callback;
+import cn.ggsn.openrxlight.model.chat.RoleType;
 import cn.ggsn.openrxlight.request.chat.ChatRequest;
 import cn.ggsn.openrxlight.request.chat.UserMessageType;
 import cn.ggsn.openrxlight.response.chat.ChatResponse;
 import cn.ggsn.openrxlight.translator.Translator;
 import cn.ggsn.openrxlight.utils.JsonUtils;
 import cn.ggsn.openrxlight.utils.QRCode;
-import cn.ggsn.rxlight.ai.claw.ClawBot;
-import cn.ggsn.rxlight.ai.claw.impl.lark.LarkBot;
+import cn.ggsn.rxlight.ai.agent.AgentBot;
+import cn.ggsn.rxlight.ai.agent.impl.lark.LarkBot;
 import cn.ggsn.rxlight.ai.domain.credentials.LarkCredential;
 import cn.ggsn.rxlight.ai.domain.credentials.OpenRxLightCredential;
+import cn.ggsn.rxlight.ai.event.CallbackEventType;
+import cn.ggsn.rxlight.orders.ApiEndpoint;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.reactivex.Flowable;
 import io.vertx.redis.client.RedisAPI;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.persistence.Column;
@@ -83,7 +89,7 @@ public class AgentApp extends PanacheEntityBase {
     @Transient
     @Setter
     @JsonIgnore
-    private ClawBot bot;
+    private AgentBot bot;
 
     @Transient
     @JsonIgnore
@@ -109,6 +115,10 @@ public class AgentApp extends PanacheEntityBase {
     @JsonIgnore
     @Setter
     private Translator translator;
+    @Transient
+    @JsonIgnore
+    @Setter
+    private ApiEndpoint orderApi;
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "type")
     public interface Credential {
@@ -137,12 +147,18 @@ public class AgentApp extends PanacheEntityBase {
         }
     }
 
-    public Stream<ChatResponse> handleMessage(RxLightChatMessage msg) throws Exception {
+    public Flowable<ChatResponse> handleMessage(RxLightChatMessage msg) throws Exception {
         this.init();
+        if (AppType.APP.equals(this.checkAppType())) {
+            if (msg.getExtra() == null || StringUtils.isBlank(msg.getExtra().getLocation())) {
+                throw new BizException(CommonErrorCode.LocationRequired, "location is required");
+            }
+        }
         return this.client
                 .dhforceIntelligence()
                 .chat(ChatRequest
                         .builder()
+                        .messageId(msg.getAppMessageId())
                         .callback(msg.getCallback())
                         .contextId(msg.getContextId())
                         .messageType(msg.getMessageType())
@@ -154,6 +170,10 @@ public class AgentApp extends PanacheEntityBase {
                                 .orElse(null))
                         .build());
 
+    }
+
+    private AppType checkAppType() {
+        return AppType.fromValue(this.appType);
     }
 
     private InputStream loadPayLogo(PaymentChannel paymentChannel) {
@@ -184,7 +204,7 @@ public class AgentApp extends PanacheEntityBase {
             if (this.bot == null) {
                 RedisAPI redis = CDI.current().select(RedisAPI.class).get();
                 EventBusPublisher eventBusPublisher = CDI.current().select(EventBusPublisher.class).get();
-                this.initClaw(redis, eventBusPublisher);
+                this.initBot(redis, eventBusPublisher);
             }
 
             if (UserMessageType.AUDIO.getName().equals(question.getMessageType())
@@ -197,9 +217,10 @@ public class AgentApp extends PanacheEntityBase {
         }
     }
 
-    private void initClaw(RedisAPI redis, EventBusPublisher eventBusPublisher) throws Exception {
+    private void initBot(RedisAPI redis, EventBusPublisher eventBusPublisher) throws Exception {
         switch (AppType.fromValue(this.appType)) {
             case FEISHU:
+            case APP:
                 var cred = (LarkCredential) this.credential;
                 this.bot = new LarkBot(
                         this.id,
@@ -211,22 +232,23 @@ public class AgentApp extends PanacheEntityBase {
                         eventBusPublisher,
                         this.client,
                         this.audioRecognizer,
-                        this.translator);
+                        this.translator, false, this.orderApi, AppType.fromValue(this.appType));
                 break;
             default:
                 break;
         }
     }
 
-    public Runnable startClaw(RedisAPI redis, EventBusPublisher eventBusPublisher, Translator translator,
-            AudioRecognizer audioRecognizer) throws Exception {
+    public Runnable startBot(RedisAPI redis, EventBusPublisher eventBusPublisher, Translator translator,
+            AudioRecognizer audioRecognizer, ApiEndpoint orderApi) throws Exception {
         this.translator = translator;
         this.audioRecognizer = audioRecognizer;
+        this.orderApi = orderApi;
         if (this.client == null) {
             this.init();
         }
         if (this.bot == null) {
-            this.initClaw(redis, eventBusPublisher);
+            this.initBot(redis, eventBusPublisher);
         }
         return () -> {
             var executor = java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor();
@@ -270,13 +292,15 @@ public class AgentApp extends PanacheEntityBase {
                         return RxLightChatMessage
                                 .fromChatResponse(
                                         this.handleMessage(msg)
-                                                .reduce(null, (acc, curr) -> {
+                                                .reduce((acc, curr) -> {
                                                     if (acc == null) {
                                                         return curr;
                                                     }
                                                     acc.merge(curr);
                                                     return acc;
-                                                }));
+                                                })
+                                                .timeout(600, TimeUnit.SECONDS)
+                                                .blockingGet());
                     } catch (ErrorResponse e) {
                         switch (BillingErrorCode.fromValue(e.getCode())) {
                             case InsufficientCredit:
@@ -286,7 +310,7 @@ public class AgentApp extends PanacheEntityBase {
                                     var variables = JsonUtils.toMap(billingInfo);
                                     variables.put("remaining_credits", billingInfo.getRemainingCredit());
                                     Lists2.foreach(this.client.billing()
-                                            .listAvailableCreditPlans("CNY", PaymentChannel.WECHAT_PAY).getResults(),
+                                            .listAvailableCreditPlans("CNY", PaymentChannel.WECHAT).getResults(),
                                             plan -> {
                                                 variables.put("packages", JsonUtils.toJsonNode(Lists2.of(Map.of(
                                                         "text", Map.of("tag", "plain_text", "content", plan.getName()),
@@ -314,6 +338,20 @@ public class AgentApp extends PanacheEntityBase {
                         }
                     } catch (RuntimeException e) {
                         log.error("app {} process message {} occurs error", this.appId, msg.getAppMessageId(), e);
+                        if (e instanceof BizException) {
+                            if (((BizException) e).getCode() == CommonErrorCode.LocationRequired.getValue()) {
+                                return RxLightChatMessage
+                                        .builder()
+                                        .appId(this.id)
+                                        .userId(msg.getUserId())
+                                        .content("Location is required")
+                                        .messageType(UserMessageType.TEXT.getName())
+                                        .createdAt(LocalDateTime.now())
+                                        .role(RoleType.ASSISTANT.getName())
+                                        .appMessageId(msg.getAppMessageId())
+                                        .build();
+                            }
+                        }
                         throw e;
                     } catch (Exception e) {
                         log.error("app {} process message {} occurs error", this.appId, msg.getAppMessageId(), e);
@@ -352,5 +390,9 @@ public class AgentApp extends PanacheEntityBase {
             log.error("claw {} stopped", this.appId);
         };
 
+    }
+
+    public static Optional<AgentApp> findByAppId(String appId, AppType appType) {
+        return find("appId = ?1 and appType = ?2", appId, appType.getCode()).firstResultOptional();
     }
 }

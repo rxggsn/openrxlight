@@ -47,7 +47,7 @@ public class AliCloudSMSVenderImpl implements SmsVender {
                 .setPhoneNumbers(StringUtils.join(smsMessage.getReceiverNumbers(), ","))
                 .setSignName(account.getSignName())
                 .setTemplateCode(account.getTemplateCode())
-                .setTemplateParam(model.getParams() != null ? model.getParams().toPrettyString() : null);
+                .setTemplateParam(model.getParams() != null ? JsonUtils.toJson(model.getParams()) : null);
         try {
             SendSmsResponse sendSms = this.client.sendSms(sendSmsRequest);
             String response = JsonUtils.toJson(sendSms);

@@ -1,5 +1,6 @@
 package cn.ggsn.openrxlight.notification.domain;
 
+import java.beans.Transient;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.dialect.type.PostgreSQLJsonPGObjectJsonbType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cn.ggsn.openrxlight.lang.Lists2;
@@ -202,6 +204,8 @@ public class ChannelConfiguration extends BaseEntity {
     // return this.accounts.getAccounts();
     // }
 
+    @JsonIgnore
+    @Transient
     public <T extends ChannelAccount> List<T> getAccounts(Class<T> clazz) {
         if (this.accounts == null) {
             return Lists2.empty();

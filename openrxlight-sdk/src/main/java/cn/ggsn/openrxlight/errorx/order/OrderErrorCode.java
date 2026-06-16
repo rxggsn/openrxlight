@@ -11,7 +11,8 @@ public enum OrderErrorCode implements ErrorCode {
     CreateOrderUpsupported(Constants.ORDER_BIZ_CODE + 3, "Create order unsupported"),
     DispatchError(Constants.ORDER_BIZ_CODE + 4, "Dispatch error: %s"),
     CannotFinishOrder(Constants.ORDER_BIZ_CODE + 5, "Cannot finish order [%d]"),
-    NotFoundOrder(Constants.ORDER_BIZ_CODE + 6, "Order [%d] not found"),
+    NotFoundOrder(Constants.ORDER_BIZ_CODE + 6, "Order [%s] not found"),
+    NoDispatchJobForOrder(Constants.ORDER_BIZ_CODE + 7, "Order with dispatch job id [%d] not found"),
     ;
 
     private final int value;

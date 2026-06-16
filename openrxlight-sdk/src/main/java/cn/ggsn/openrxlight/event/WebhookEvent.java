@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class WebhookEvent {
     public static interface Type {
         public static final int ORDER_STATUS_CHANGED = 1;
+        public static final int ORDER_SETTLED = 2;
         public static final int DISPATCH_RESULT = 9;
         public static final int DI_NOTIFY = 10;
     }

@@ -2,8 +2,6 @@ package cn.ggsn.openrxlight.utils;
 
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Stream;
-
 import org.apache.commons.lang.StringUtils;
 
 import cn.ggsn.openrxlight.Constants;
@@ -18,6 +16,8 @@ import cn.ggsn.openrxlight.response.OpenRxLightResponse;
 import cn.ggsn.openrxlight.services.AuthenticationService;
 import cn.ggsn.openrxlight.token.GlobalTokenManager;
 import cn.ggsn.openrxlight.token.ICache;
+import io.reactivex.Flowable;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.net.HttpHeaders;
@@ -98,7 +98,7 @@ public class Transport {
 
     }
 
-    public static <Resp, Req> Stream<Resp> sendSse(Config config, Req request, String path, String method,
+    public static <Resp, Req> Flowable<Resp> sendSse(Config config, Req request, String path, String method,
             Class<Resp> clazz) throws Exception {
         var body = new OpenRxLightRequest(request, config, path, method);
         ICache cache = GlobalTokenManager.getCache(config.getClientId());

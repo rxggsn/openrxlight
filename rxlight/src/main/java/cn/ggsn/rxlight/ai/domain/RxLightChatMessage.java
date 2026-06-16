@@ -22,8 +22,10 @@ import cn.ggsn.openrxlight.request.chat.UserMessageType;
 import cn.ggsn.openrxlight.response.chat.ChatResponse;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Attachment;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Usage;
+import cn.ggsn.openrxlight.utils.JsonUtils;
+import cn.ggsn.rxlight.ai.event.CallbackEventType;
+import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.domain.BaseEntity;
-import cn.ggsn.openrxlight.event.chat.CallbackEventType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -95,12 +97,11 @@ public class RxLightChatMessage extends BaseEntity {
                 .contextId(response.getContextId())
                 .openrxlightMessageId(response.getId())
                 .content(Optional.ofNullable(response.getContent())
-                        .map(content -> content.toPrettyString())
+                        .map(content -> JsonUtils.toJson(content))
                         .orElse(null))
                 .callback(response.getCallback())
                 .createdAt(LocalDateTime.now())
-                .messageType(response.getCallback() != null ? UserMessageType.CALLBACK.getName()
-                        : UserMessageType.POST.getName())
+                .messageType(RxLightChatMessage.getMessageTypeFromObject(response.getObject()).getName())
                 .role(RoleType.ASSISTANT.getName())
                 .attachments(Lists2.map(response.getAttachments(), attachment -> {
                     Map<String, Object> map = Maps2.empty();
@@ -148,5 +149,16 @@ public class RxLightChatMessage extends BaseEntity {
             this.extra = new ExtraInfo();
         }
         this.extra.setLocation(location);
+    }
+
+    private static UserMessageType getMessageTypeFromObject(String object) {
+        if (StringUtils.equals(object, Constants.COMPLETE_CHUNK)) {
+            return UserMessageType.POST;
+        } else if (StringUtils.equals(object, Constants.CHAT_CALLBACK)
+                || StringUtils.equals(object, Constants.CHAT_HYBRID)) {
+            return UserMessageType.CALLBACK;
+        } else {
+            return UserMessageType.POST;
+        }
     }
 }

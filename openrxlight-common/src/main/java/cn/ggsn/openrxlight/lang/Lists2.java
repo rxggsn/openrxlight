@@ -1,6 +1,7 @@
 package cn.ggsn.openrxlight.lang;
 
 import com.google.common.collect.Lists;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -136,7 +137,6 @@ public class Lists2 {
         if (Lists2.isEmpty(list)) {
             return init;
         }
-
 
         U result = init;
         T last = null;
@@ -329,5 +329,4 @@ public class Lists2 {
         }
         return list.get(list.size() - 1);
     }
-
 }

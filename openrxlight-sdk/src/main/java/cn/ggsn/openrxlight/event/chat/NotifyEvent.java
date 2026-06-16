@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
-import cn.ggsn.openrxlight.model.chat.Callback;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Choice;
 import cn.ggsn.openrxlight.utils.JsonUtils;
 import lombok.AllArgsConstructor;
@@ -26,7 +25,6 @@ public class NotifyEvent {
     private String userId;
     private Integer accountType;
     private String streamId;
-    private Callback callback;
 
     @JsonIgnore
     public JsonNode getContent() {

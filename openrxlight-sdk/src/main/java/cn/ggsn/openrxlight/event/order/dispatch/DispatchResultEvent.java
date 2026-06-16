@@ -1,8 +1,11 @@
 package cn.ggsn.openrxlight.event.order.dispatch;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.util.List;
 
-import cn.ggsn.openrxlight.response.chat.ChatResponse;
+import cn.ggsn.openrxlight.model.device.DeviceInfo;
+import cn.ggsn.openrxlight.model.order.OpsOrder;
+import cn.ggsn.openrxlight.model.station.StationInfo;
+import cn.ggsn.openrxlight.model.station.StationSpace;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +16,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class DispatchResultEvent {
-    public static final String CREATE_ORDER_TYPE = "CREATE_ORDER";
-    public static final String FINISH_ORDER_TYPE = "FINISH_ORDER";
+    public static final String FULL_AUTO = "full_automatic";
+    public static final String SEMI_AUTO = "semi_auto";
+    public static final String MANUAL = "manual";
     private String type;
-    private JsonNode body;
-    private ChatResponse response;
+    private StationInfo station;
+    private StationSpace space;
+    private List<DeviceInfo> devices;
+    private OpsOrder order;
 }

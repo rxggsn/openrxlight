@@ -4,21 +4,15 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import com.google.common.net.HttpHeaders;
 
 import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.httpx.IHttpTransport;
 import cn.ggsn.openrxlight.httpx.RawRequest;
 import cn.ggsn.openrxlight.httpx.RawResponse;
-import cn.ggsn.openrxlight.httpx.UnsafeSseStream;
+import cn.ggsn.openrxlight.httpx.OpenRxLightEventSourceListener;
 import cn.ggsn.openrxlight.utils.JsonUtils;
-
+import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,8 +30,8 @@ public class OkHttpTransport implements IHttpTransport {
         this.okHttpClient = new OkHttpClient.Builder()
                 .connectTimeout(Duration.ofSeconds(30)) // connection timeout
                 .readTimeout(Duration.ofSeconds(600)) // read timeout: maximum time to wait for data, 600s for SSE
-                .writeTimeout(Duration.ofSeconds(30)) // write timeout
-                .callTimeout(Duration.ofSeconds(30)) // total call timeout
+                .writeTimeout(Duration.ofSeconds(600)) // write timeout
+                .callTimeout(Duration.ofSeconds(600)) // total call timeout
                 .build();
     }
 
@@ -83,7 +77,7 @@ public class OkHttpTransport implements IHttpTransport {
     }
 
     @Override
-    public <T> Stream<T> executeSse(RawRequest request, Class<T> clazz) throws Exception {
+    public <T> Flowable<T> executeSse(RawRequest request, Class<T> clazz) throws Exception {
         // create event source
         EventSource.Factory factory = EventSources.createFactory(this.okHttpClient);
         // build request
@@ -102,60 +96,10 @@ public class OkHttpTransport implements IHttpTransport {
             }
         }
         // create SSE stream
-        UnsafeSseStream<T> sseStream = new UnsafeSseStream<T>(clazz);
+        var sseStream = new OpenRxLightEventSourceListener<T>(clazz);
         // register sse stream to event source
-        EventSource eventSource = factory.newEventSource(builder.build(), sseStream);
-        sseStream.setEventSource(eventSource);
+        factory.newEventSource(builder.build(), sseStream);
 
-        // convert to Stream<T>
-        Spliterator<T> spliterator = new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE,
-                Spliterator.ORDERED | Spliterator.IMMUTABLE) {
-            boolean finished;
-
-            @Override
-            public boolean tryAdvance(Consumer<? super T> action) {
-                Objects.requireNonNull(action);
-                if (finished)
-                    return false;
-                
-                T t = sseStream.next();
-                if (sseStream.isClosed()) {
-                    finished = true;
-                    return false;
-                }
-
-                if (t != null) {
-                    action.accept(t);
-                } else {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                return true;
-            }
-
-            @Override
-            public void forEachRemaining(Consumer<? super T> action) {
-                Objects.requireNonNull(action);
-                if (finished)
-                    return;
-                finished = true;
-                T t = sseStream.next();
-                while (!sseStream.isClosed()) {
-                    if (t != null) {
-                        action.accept(t);
-                    } else {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                    t = sseStream.next();
-                }
-                log.debug("SSE stream closed, stop consuming");
-            }
-        };
-        return StreamSupport.stream(spliterator, false).filter(Objects::nonNull);
+        return sseStream.events();
     }
 }

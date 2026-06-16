@@ -78,4 +78,11 @@ class SmsSender implements NotificationSender {
         return ChannelType.SMS.equals(channelType);
     }
 
+    @Override
+    public List<MessageRecord> batchSendResponse(NotificationReq notificationReq, ChannelConfiguration config,
+            List<NtyTemplate> list, List<Account> accounts) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'batchSendResponse'");
+    }
+
 }

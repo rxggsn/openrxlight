@@ -1,10 +1,10 @@
 package cn.ggsn.rxlight.webhook;
 
-import java.util.List;
 import java.util.Optional;
 
 import cn.ggsn.openrxlight.event.WebhookEvent;
 import cn.ggsn.openrxlight.event.WebhookResponse;
+import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
@@ -16,10 +16,10 @@ import jakarta.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class WebhookApi {
-    private final List<WebhookEventHandler> webhookEventHandlers;
+    private final Instance<WebhookEventHandler> webhookEventHandlers;
 
-    public WebhookApi(Instance<WebhookEventHandler> webhookEventHandlers) {
-        this.webhookEventHandlers = webhookEventHandlers.stream().toList();
+    public WebhookApi(@Any Instance<WebhookEventHandler> webhookEventHandlers) {
+        this.webhookEventHandlers = webhookEventHandlers;
     }
 
     @POST

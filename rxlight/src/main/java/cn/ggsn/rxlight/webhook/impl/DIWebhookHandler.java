@@ -1,11 +1,10 @@
 package cn.ggsn.rxlight.webhook.impl;
 
-import java.util.UUID;
-
 import cn.ggsn.openrxlight.account.domain.Account;
 import cn.ggsn.openrxlight.account.error.AccountError;
 import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.domain.AccountType;
+import cn.ggsn.openrxlight.domain.ExternalAccountType;
 import cn.ggsn.openrxlight.errorx.BizException;
 import cn.ggsn.openrxlight.event.WebhookEvent;
 import cn.ggsn.openrxlight.event.chat.NotifyEvent;
@@ -31,10 +30,13 @@ class DIWebhookHandler implements WebhookEventHandler {
     public void handleEvent(WebhookEvent event) {
         try {
             NotifyEvent eventBody = event.getBody(NotifyEvent.class, this.openRxLightV2.getConfig());
-            var account = Account.getByAccountId(UUID.fromString(eventBody.getUserId()),
-                    AccountType.fromValue(eventBody.getAccountType()))
+            var account = Account.getAccountByExternalAccount(eventBody.getUserId(),
+                    ExternalAccountType.DEVELOPER, AccountType.fromValue(eventBody.getAccountType()))
                     .orElseThrow(() -> new BizException(AccountError.AccountNotExist, eventBody.getUserId()));
-
+            // Here we cannot fetch the message from database because the message is not
+            // persisted yet when DI callback is triggered,
+            // the only thing we can use is user's account. So it's important to make sure
+            // the account info is complete and correct
             RecvRequest request = RecvRequest.builder()
                     .messageId(eventBody.getId())
                     .streamId(eventBody.getStreamId())
@@ -42,11 +44,11 @@ class DIWebhookHandler implements WebhookEventHandler {
             ChatResponse response = this.openRxLightV2
                     .dhforceIntelligence()
                     .recv(request)
-                    .reduce(new ChatResponse(),
-                            (acc, resp) -> {
-                                acc.merge(resp);
-                                return acc;
-                            });
+                    .reduce((acc, resp) -> {
+                        acc.merge(resp);
+                        return acc;
+                    })
+                    .blockingGet();
             this.notificationService.sendToAccount(
                     NotificationReq
                             .builder()

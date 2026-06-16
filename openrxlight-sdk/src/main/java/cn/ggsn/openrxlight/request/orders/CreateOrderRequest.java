@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import cn.ggsn.openrxlight.model.order.OrderType;
-import cn.ggsn.openrxlight.model.order.PayChannel;
-import cn.ggsn.openrxlight.model.order.PayType;
 import cn.ggsn.openrxlight.request.Required;
 import cn.ggsn.openrxlight.request.Validate;
 import lombok.AllArgsConstructor;
@@ -45,8 +43,4 @@ public class CreateOrderRequest implements Validate {
     private BigDecimal longitude;
     @Required
     private BigDecimal latitude;
-    @Required
-    private PayChannel paymentChannel;
-    @Required
-    private PayType payType;
 }

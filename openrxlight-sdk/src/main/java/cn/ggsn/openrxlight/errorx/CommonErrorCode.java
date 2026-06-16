@@ -14,6 +14,7 @@ public enum CommonErrorCode implements ErrorCode {
     MissingRequiredHeaderForFeignAuth(Constants.COMMON_BIZ_CODE + 11, "missing required header [%s] for feign auth"),
     TransDataErr(Constants.COMMON_BIZ_CODE + 12, "转化数据失败"),
     HttpRequestFailed(Constants.COMMON_BIZ_CODE + 13, "http请求失败, 状态码: %d, 响应内容: %s"),
+    LocationRequired(Constants.COMMON_BIZ_CODE + 14, "location is required"),
     ;
 
     private final int value;

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -31,7 +32,7 @@ public class ExternalAccount {
         this.accountInfo = null;
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "type")
     public interface ExternalAccountInfo {
     }
 
@@ -39,6 +40,7 @@ public class ExternalAccount {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class WechatAccountInfo implements ExternalAccountInfo {
         private String appId;
         private String unionId;

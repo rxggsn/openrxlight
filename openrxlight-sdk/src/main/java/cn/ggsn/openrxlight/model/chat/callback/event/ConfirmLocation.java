@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonNaming(com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ConfirmLocation {
+    public static final String CALLBACK_TYPE = "confirm_location";
     private List<Location> locations;
 
     @Data
