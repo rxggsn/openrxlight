@@ -18,7 +18,7 @@ openrxlight/
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **openrxlight-sdk**    | Client SDK providing HTTP/API wrappers for OpenRxLight services. Includes token management (`GlobalTokenManager`), data crypto utilities, digital signature, SSE streaming support, error/response models, and HTTP transport utilities. Publishable to Maven Central with GPG signing.                |
 | **openrxlight-common** | Shared utilities and domain logic used by `rxlight` and other consumers. Provides Redis caching, token interceptors & stores, notification service, ORM extensions, AI audio/translation abstractions, event bus publisher/listener, and common domain models.            |
-| **rxlight**            | The main Quarkus application. Exposes REST/WebSocket APIs, integrates with PostgreSQL (Hibernate ORM + Flyway), Redis, NATS event bus, WeChat Mini Program, Lark bot, Alicloud TTS/translator, and S3-compatible file storage.                                              |
+| **rxlight**            | The main Quarkus application. Exposes REST/WebSocket APIs, integrates with PostgreSQL (Hibernate ORM + Flyway), Redis, Local event bus, WeChat Mini Program, Lark bot, Alicloud TTS/translator, and S3-compatible file storage.                                              |
 
 ## Environment Preparation
 
@@ -61,18 +61,6 @@ psql -h localhost -U postgres -d rxlight -c "SELECT 1"
 ```
 
 Flyway migrations are located at `rxlight/src/main/resources/db/migration/` and run automatically at startup (`quarkus.flyway.migrate-at-start=true`).
-
-### NATS
-
-Message broker for the event bus used by AI agents (ClawBox, LarkBot) and account hooks. NATS is used in production; for local development, the event bus is **disabled by default** (`%dev.quarkus.event.bus.enabled=false`).
-
-```bash
-# Docker (if you need NATS locally)
-docker run -d --name nats -p 4222:4222 -p 8222:8222 nats:alpine
-
-# Verify
-docker exec nats nats-server --version
-```
 
 ## Configuration
 
@@ -200,7 +188,6 @@ openrxlight.ai.translator.alicloud.secret-key=${ALICLOUD_ACCESS_KEY_SECRET}
 - **Language**: Java 21+
 - **Database**: PostgreSQL + Hibernate ORM 7.x + Flyway
 - **Cache**: Redis (Lettuce client, RESP3 protocol)
-- **Event Bus**: NATS (jnats)
 - **Build**: Maven 3.9+ with Maven Wrapper
 - **CI/CD**: GitHub Actions
 - **Container**: Docker (Alibaba Cloud ACR)
