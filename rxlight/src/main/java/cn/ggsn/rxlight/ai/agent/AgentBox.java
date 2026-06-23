@@ -11,7 +11,6 @@ import cn.ggsn.rxlight.ai.domain.AgentApp;
 import cn.ggsn.rxlight.ai.domain.AppType;
 import cn.ggsn.rxlight.orders.ApiEndpoint;
 import io.quarkus.runtime.Startup;
-import io.vertx.redis.client.RedisAPI;
 import jakarta.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,13 +21,13 @@ public class AgentBox {
   private final List<AgentApp> bot;
   private final ExecutorService executor;
 
-  public AgentBox(RedisAPI redis, EventBusPublisher eventBusPublisher, Translator translator,
-      AudioRecognizer audioRecognizer, ApiEndpoint orderApi) {
+  public AgentBox(EventBusPublisher eventBusPublisher, Translator translator, AudioRecognizer audioRecognizer,
+      ApiEndpoint orderApi) {
     this.executor = java.util.concurrent.Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     this.bot = AgentApp.findApps(Lists2.of(AppType.FEISHU, AppType.APP));
     this.bot.forEach(agent -> {
       try {
-        this.executor.submit(agent.startBot(redis, eventBusPublisher, translator, audioRecognizer, orderApi));
+        this.executor.submit(agent.startBot(eventBusPublisher, translator, audioRecognizer, orderApi));
       } catch (Exception e) {
         log.error("Failed to start claw bot for app {}", agent.getAppId(), e);
         throw new RuntimeException(e);

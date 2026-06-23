@@ -22,4 +22,5 @@ public class Constants {
     public static final int SETTLEMENT_BIZ_CODE = 21000;
     public static final int DOMESTIC_SETTLEMENT_BIZ_CODE = 21000;
     public static final int BILLING_BIZ_CODE = 22000;
+    public static final int DI_BIZE_CODE = 23000;
 }

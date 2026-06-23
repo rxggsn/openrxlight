@@ -24,18 +24,18 @@ public class OptionItem {
     @Builder
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Text {
-        private String text;
-        private TextType type;
+        private String content;
+        private TextType tag;
 
         @EnumNaming(EnumNamingStrategies.SnakeCaseStrategy.class)
         public enum TextType {
-            PlainText,
+            PLAIN_TEXT,
         }
 
         public static Text plainText(String name) {
             return Text.builder()
-                    .text(name)
-                    .type(TextType.PlainText)
+                    .content(name)
+                    .tag(TextType.PLAIN_TEXT)
                     .build();
         }
     }

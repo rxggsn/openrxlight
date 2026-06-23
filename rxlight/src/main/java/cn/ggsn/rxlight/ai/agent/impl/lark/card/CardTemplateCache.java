@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.Maps;
 
 import cn.ggsn.openrxlight.lang.Lists2;
@@ -31,6 +32,7 @@ public class CardTemplateCache {
                     String.format("Card template with id %s not found", templateId));
         }
 
-        return cardTemplate;
+        return new CardTemplate(cardTemplate.getTemplateId(), cardTemplate.getStreamKey(),
+                cardTemplate.getContent().deepCopy());
     }
 }

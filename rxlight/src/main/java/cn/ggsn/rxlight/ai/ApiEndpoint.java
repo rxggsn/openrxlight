@@ -1,7 +1,6 @@
 package cn.ggsn.rxlight.ai;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import cn.ggsn.openrxlight.account.error.AccountError;
 import cn.ggsn.openrxlight.api.OpenRxLightV2;
 import cn.ggsn.openrxlight.domain.AccountType;
@@ -9,7 +8,6 @@ import cn.ggsn.openrxlight.errorx.BizException;
 import cn.ggsn.openrxlight.errorx.CommonErrorCode;
 import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.model.chat.RoleType;
-import cn.ggsn.openrxlight.request.chat.UserMessageType;
 import cn.ggsn.openrxlight.utils.JsonUtils;
 import cn.ggsn.openrxlight.utils.MessageIdGenerator;
 import cn.ggsn.openrxlight.web.AuthorizationToken;
@@ -94,10 +92,8 @@ public class ApiEndpoint {
                 .createdAt(LocalDateTime.now())
                 .appId(app.getId())
                 .openrxlightMessageId(finalResult.getId())
-                .messageType(Optional.ofNullable(finalResult.getCallback())
-                        .map(callback -> UserMessageType.CALLBACK.getName())
-                        .orElseGet(() -> UserMessageType.TEXT.getName()))
-                .callback(finalResult.getCallback())
+                .messageType(finalResult.getObject())
+                .callback(new RxLightChatMessage.CallbackSet(finalResult.getCallbacks()))
                 .role(RoleType.ASSISTANT.getName())
                 .build()
                 .save();

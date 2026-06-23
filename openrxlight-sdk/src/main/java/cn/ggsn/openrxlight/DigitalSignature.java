@@ -112,7 +112,9 @@ public enum DigitalSignature {
         byte[] publicKeyBytes = Base64.getDecoder().decode(StringUtils
                 .replace(pubKey, "-----BEGIN PUBLIC KEY-----", "")
                 .replace("-----END PUBLIC KEY-----", "")
-                .replaceAll("\\s", ""));
+                .replaceAll("\\s", "")
+                .replaceAll("\n", "")
+                .replaceAll("\r", ""));
         EncodedKeySpec keySpec = null;
         switch (this) {
             case RSA_SHA256:

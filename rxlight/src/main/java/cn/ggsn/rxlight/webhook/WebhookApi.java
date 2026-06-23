@@ -4,6 +4,9 @@ import java.util.Optional;
 
 import cn.ggsn.openrxlight.event.WebhookEvent;
 import cn.ggsn.openrxlight.event.WebhookResponse;
+import cn.ggsn.openrxlight.httpx.HttpMethod;
+import cn.ggsn.openrxlight.web.AuthConstants;
+import cn.ggsn.openrxlight.web.Uri;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.inject.Instance;
 import jakarta.ws.rs.Consumes;
@@ -19,6 +22,7 @@ public class WebhookApi {
     private final Instance<WebhookEventHandler> webhookEventHandlers;
 
     public WebhookApi(@Any Instance<WebhookEventHandler> webhookEventHandlers) {
+        AuthConstants.IGNORE_AUTH_BIZ_URI.add(new Uri(HttpMethod.POST.getName(), "/webhook"));
         this.webhookEventHandlers = webhookEventHandlers;
     }
 

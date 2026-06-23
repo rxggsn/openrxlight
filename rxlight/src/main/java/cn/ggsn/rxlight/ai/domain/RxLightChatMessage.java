@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -13,6 +14,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.dialect.type.PostgreSQLJsonPGObjectJsonbType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.lang.Maps2;
@@ -23,7 +25,6 @@ import cn.ggsn.openrxlight.response.chat.ChatResponse;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Attachment;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Usage;
 import cn.ggsn.openrxlight.utils.JsonUtils;
-import cn.ggsn.rxlight.ai.event.CallbackEventType;
 import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.domain.BaseEntity;
 import jakarta.persistence.Column;
@@ -59,7 +60,7 @@ public class RxLightChatMessage extends BaseEntity {
     @Column(name = "callback", nullable = true)
     @JdbcType(PostgreSQLJsonPGObjectJsonbType.class)
     @JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
-    private Callback callback; // Callback information (JSON)
+    private CallbackSet callback; // Callback information (JSON)
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt; // Creation timestamp
     @Column(name = "message_type", nullable = false)
@@ -82,11 +83,20 @@ public class RxLightChatMessage extends BaseEntity {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
+    public static class CallbackSet {
+        @JsonUnwrapped
+        private Set<Callback> callbacks;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ExtraInfo {
-        private String location; // latitude and longitude in "latitude,longitude" format (WGS84), e.g.,
+        private String location; // latitude and longitude in "longitude,latitude" format (WGS84), e.g.,
                                  // "37.7749,-122.4194", required if appId is 1;
         private Usage usage; // credit usage information (if any)
-
+        private String i18n; // i18n locale
     }
 
     public static Optional<RxLightChatMessage> findByAppMessageId(Integer id, UUID accountId, String messageId) {
@@ -101,7 +111,7 @@ public class RxLightChatMessage extends BaseEntity {
                 .content(Optional.ofNullable(response.getContent())
                         .map(content -> JsonUtils.toJson(content))
                         .orElse(null))
-                .callback(response.getCallback())
+                .callback(new CallbackSet(response.getCallbacks()))
                 .createdAt(LocalDateTime.now())
                 .messageType(RxLightChatMessage.getMessageTypeFromObject(response.getObject()).getName())
                 .role(RoleType.ASSISTANT.getName())
@@ -129,13 +139,6 @@ public class RxLightChatMessage extends BaseEntity {
                 .filename(map.containsKey("filename") ? (String) map.get("filename") : null)
                 .file(map.containsKey("file") ? (File) map.get("file") : null)
                 .build());
-    }
-
-    public boolean isPayForBill() {
-        return StringUtils.equals(this.messageType, UserMessageType.CALLBACK.getName())
-                && this.callback != null
-                && (StringUtils.equals(this.callback.getType(), CallbackEventType.PAY_FOR_ADDED_ON)
-                        || StringUtils.equals(this.callback.getType(), CallbackEventType.PAY_FOR_BILL));
     }
 
     public void detachAttachments() {

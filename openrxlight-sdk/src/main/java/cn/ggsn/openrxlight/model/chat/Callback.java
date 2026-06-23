@@ -1,5 +1,6 @@
 package cn.ggsn.openrxlight.model.chat;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -14,6 +15,7 @@ import cn.ggsn.openrxlight.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -21,13 +23,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Callback implements Validate {
+@EqualsAndHashCode(of = { "type", "callbackId" })
+public class Callback implements Validate, Cloneable {
 
     @Required
     private String type;
     @Required
     private Map<String, JsonNode> variables;
-    @Required
     private String callbackId;
 
     public <T> T getVariablesAs(Class<T> class1) {
@@ -48,5 +50,20 @@ public class Callback implements Validate {
                 this.variables.putAll(callback.getVariables());
             }
         }
+        if (StringUtils.isBlank(this.callbackId)) {
+            this.callbackId = callback.callbackId;
+        }
+    }
+
+    @Override
+    public Callback clone() {
+        Map<String, JsonNode> clonedVariables = null;
+        if (this.variables != null) {
+            clonedVariables = new HashMap<>();
+            for (Map.Entry<String, JsonNode> entry : this.variables.entrySet()) {
+                clonedVariables.put(entry.getKey(), entry.getValue().deepCopy());
+            }
+        }
+        return new Callback(this.type, clonedVariables, this.callbackId);
     }
 }

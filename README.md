@@ -29,20 +29,6 @@ The application requires the following infrastructure services running locally (
 - **JDK 21+** (We need Virtual Thread Feature)
 - **Maven 3.9+** (or use the bundled `mvnw` wrapper)
 
-### Redis
-
-Used for token storage, caching, and real-time communication via Redis Pub/Sub.
-
-```bash
-# Docker
-docker run -d --name redis -p 6379:6379 redis:7-alpine
-
-# Verify
-redis-cli ping  # PONG
-```
-
-The dev profile connects to `redis://localhost:6379/0` with RESP3 protocol.
-
 ### PostgreSQL
 
 Primary relational database for persistent data (accounts, configurations, migrations via Flyway).
@@ -186,9 +172,9 @@ openrxlight.ai.translator.alicloud.secret-key=${ALICLOUD_ACCESS_KEY_SECRET}
 
 - **Framework**: Quarkus 3.30.4
 - **Language**: Java 21+
-- **Database**: PostgreSQL + Hibernate ORM 7.x + Flyway
-- **Cache**: Redis (Lettuce client, RESP3 protocol)
+- **Database**: PostgreSQL(15+) + Hibernate ORM 7.x + Flyway
+- **Cache**: Caffine Cache (High-Performance Concurrency Expirable Cache)
 - **Build**: Maven 3.9+ with Maven Wrapper
-- **CI/CD**: GitHub Actions
-- **Container**: Docker (Alibaba Cloud ACR)
+- **CI/CD**: GitHub Actions Or Others With Same Functions
+- **Container**: Docker/K8S
 - **Other**: gRPC, Protobuf, WeChat SDK, Lark SDK, S3 (AWS SDK v2)

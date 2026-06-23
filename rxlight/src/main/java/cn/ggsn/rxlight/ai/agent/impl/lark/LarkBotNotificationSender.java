@@ -27,7 +27,6 @@ import cn.ggsn.rxlight.ai.agent.impl.lark.vo.LarkAccountInfo;
 import cn.ggsn.rxlight.ai.domain.AgentApp;
 import cn.ggsn.rxlight.ai.domain.AppType;
 import cn.ggsn.rxlight.ai.domain.RxLightChatMessage;
-import io.vertx.redis.client.RedisAPI;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 class LarkBotNotificationSender implements NotificationSender {
-    private final RedisAPI redisAPI;
     private final EventBusPublisher eventBusPublisher;
 
     @Override
@@ -64,9 +62,9 @@ class LarkBotNotificationSender implements NotificationSender {
                                                         .of(new LarkBot(agentApp.getId(), app.getAppId(),
                                                                 app.getAppSecret(),
                                                                 null,
-                                                                null, this.redisAPI,
-                                                                this.eventBusPublisher, null, null, null, true,
-                                                                null, AppType.FEISHU));
+                                                                null, this.eventBusPublisher,
+                                                                null, null, null, true, null,
+                                                                AppType.FEISHU));
                                             } catch (IOException e) {
                                                 log.error("Failed to create LarkBot for appId {}: {}",
                                                         app.getAppId(),

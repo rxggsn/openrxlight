@@ -46,4 +46,13 @@ public class Maps2 {
         }
         return result;
     }
+
+    public static <K, V, R> Map<R, V> mapKey(@NonNull Map<K, V> map, Function<K, R> mapper) {
+        Map<R, V> result = new HashMap<>();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            result.put(mapper.apply(entry.getKey()), entry.getValue());
+        }
+        return result;
+    }
+
 }

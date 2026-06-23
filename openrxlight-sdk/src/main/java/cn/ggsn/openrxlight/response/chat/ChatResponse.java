@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -36,10 +38,10 @@ public class ChatResponse {
     private Long created;
     private String contextId;
     private List<Choice> choices;
-    private Callback callback;
     private List<Attachment> attachments;
     private Integer scenario;
     private Usage usage;
+    private Set<Callback> callbacks;
 
     @Data
     @NoArgsConstructor
@@ -171,11 +173,31 @@ public class ChatResponse {
             }
         }
 
-        if (other.getCallback() != null) {
-            if (this.callback == null) {
-                this.callback = other.getCallback();
+        // if (other.getCallback() != null) {
+        // if (this.callback == null) {
+        // this.callback = other.getCallback();
+        // } else {
+        // this.callback.merge(other.getCallback());
+        // }
+        // }
+
+        if (other.getCallbacks() != null) {
+            if (this.callbacks == null) {
+                this.callbacks = other.getCallbacks();
             } else {
-                this.callback.merge(other.getCallback());
+                var mapping = other.callbacks.stream()
+                        .collect(Collectors.toMap(
+                                callback -> StringUtils
+                                        .join(new String[] { callback.getCallbackId(), callback.getType() }, ":"),
+                                callback -> callback));
+                this.callbacks.forEach(callback -> {
+                    var key = StringUtils
+                            .join(new String[] { callback.getCallbackId(), callback.getType() }, ":");
+                    var mappedCallback = mapping.remove(key);
+                    callback.merge(mappedCallback);
+                });
+
+                mapping.values().forEach(callback -> this.callbacks.add(callback));
             }
         }
     }
@@ -183,7 +205,7 @@ public class ChatResponse {
     public boolean isEmpty() {
         return (this.choices == null || this.choices.isEmpty())
                 && (this.attachments == null || this.attachments.isEmpty())
-                && this.callback == null;
+                && (this.callbacks == null || this.callbacks.isEmpty());
     }
 
     @JsonIgnore
@@ -205,7 +227,7 @@ public class ChatResponse {
 
     public boolean isStopped() {
         if ((this.choices == null || this.choices.isEmpty())
-                && (this.callback == null || StringUtils.isBlank(this.callback.getCallbackId()))) {
+                && (this.callbacks == null || this.callbacks.isEmpty())) {
             return true;
         }
 

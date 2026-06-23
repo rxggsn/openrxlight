@@ -24,11 +24,9 @@ public class ConfirmLocation {
     @Builder
     @JsonNaming(com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Location {
-        private Long id;
+        private String id;
         private String name;
         private String address;
-        private BigDecimal latitude;
-        private BigDecimal longitude;
         private BigDecimal distance;
     }
 }

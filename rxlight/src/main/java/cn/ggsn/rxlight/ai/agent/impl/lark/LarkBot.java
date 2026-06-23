@@ -1,6 +1,7 @@
 package cn.ggsn.rxlight.ai.agent.impl.lark;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -73,10 +74,12 @@ import cn.ggsn.openrxlight.event.EventBusPublisher;
 import cn.ggsn.openrxlight.event.EventBusType;
 import cn.ggsn.openrxlight.lang.Lists2;
 import cn.ggsn.openrxlight.lang.Maps2;
+import cn.ggsn.openrxlight.lang.Sets2;
 import cn.ggsn.openrxlight.model.chat.Callback;
 import cn.ggsn.openrxlight.request.chat.UserMessageType;
 import cn.ggsn.openrxlight.response.chat.ChatResponse.Attachment;
 import cn.ggsn.openrxlight.translator.Translator;
+import cn.ggsn.openrxlight.utils.GpsCoordinateUtils;
 import cn.ggsn.openrxlight.utils.JsonUtils;
 import cn.ggsn.openrxlight.web.RoleType;
 import cn.ggsn.rxlight.account.event.BatchCreateAccountEvent;
@@ -93,14 +96,14 @@ import cn.ggsn.rxlight.ai.agent.impl.lark.model.RichTextPost.PostContent;
 import cn.ggsn.rxlight.ai.agent.impl.lark.model.RichTextPost;
 import cn.ggsn.rxlight.ai.agent.impl.lark.model.TextMessage;
 import cn.ggsn.rxlight.ai.agent.impl.lark.vo.LarkAccountInfo;
+import cn.ggsn.rxlight.ai.agent.impl.lark.vo.LarkBotSetting;
 import cn.ggsn.rxlight.ai.agent.impl.lark.vo.LarkContext;
 import cn.ggsn.rxlight.ai.agent.vo.AgentContext;
 import cn.ggsn.rxlight.ai.domain.AppType;
 import cn.ggsn.rxlight.ai.domain.RxLightChatMessage;
+import cn.ggsn.rxlight.ai.domain.RxLightChatMessage.CallbackSet;
 import cn.ggsn.rxlight.ai.event.CallbackEventType;
 import cn.ggsn.rxlight.orders.ApiEndpoint;
-import io.vertx.core.Future;
-import io.vertx.redis.client.RedisAPI;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +112,6 @@ import lombok.extern.slf4j.Slf4j;
 public class LarkBot extends AgentBot {
     private final Client client;
     private final CardTemplateCache cardTemplates;
-    private final RedisAPI redis;
     private final EventBusPublisher eventBusPublisher;
     private final AudioRecognizer audioRecognizer;
     private static final String COMMAND_MENU_EVENT = "cmd.menu";
@@ -166,12 +168,17 @@ public class LarkBot extends AgentBot {
                 case LOCATION:
                     LocationMessage locationMessage = JsonUtils.fromJson(eventData.getMessage().getContent(),
                             LocationMessage.class);
+                    var longitude = Double.parseDouble(locationMessage.getLongitude());
+                    var latitude = Double.parseDouble(locationMessage.getLatitude());
+
+                    var wgs84Coordinator = GpsCoordinateUtils.calGCJ02toWGS84(latitude, longitude);
+
                     rxLightChatMessage.setMessageType(UserMessageType.LOCATION.getName());
-                    rxLightChatMessage.setContent(StringUtils.join(Lists2.of(locationMessage.getLatitude(),
-                            locationMessage.getLongitude()), ","));
+                    String location = StringUtils.join(Lists2.of(Double.toString(wgs84Coordinator[1]),
+                            Double.toString(wgs84Coordinator[0])), ",");
+                    rxLightChatMessage.setContent(location);
                     rxLightChatMessage.setExtra(RxLightChatMessage.ExtraInfo.builder()
-                            .location(StringUtils.join(Lists2.of(locationMessage.getLatitude(),
-                                    locationMessage.getLongitude()), ","))
+                            .location(location)
                             .build());
                     break;
                 default:
@@ -190,19 +197,17 @@ public class LarkBot extends AgentBot {
             String appSecret,
             String verificationToken,
             String encryptKey,
-            RedisAPI redis,
             EventBusPublisher eventBusPublisher,
             OpenRxLightV2 openRxLightV2,
             AudioRecognizer audioRecognizer,
             Translator translator,
-            Boolean offline, ApiEndpoint orderApi,
-            AppType appType)
+            Boolean offline,
+            ApiEndpoint orderApi, AppType appType)
             throws IOException {
-        super(new LarkContext(redis, agentId, appId, appType));
+        super(new LarkContext(agentId, appId, appType));
         this.client = Client.newBuilder(appId, appSecret).build();
 
         this.cardTemplates = new CardTemplateCache("/thirdparty/lark/templates/templates.json");
-        this.redis = redis;
         this.eventBusPublisher = eventBusPublisher;
         this.audioRecognizer = audioRecognizer;
         this.translator = translator;
@@ -210,14 +215,25 @@ public class LarkBot extends AgentBot {
         try {
             this.fs = Path.of(System.getProperty("user.home"), ".rxlight", "app_files", String.valueOf(agentId));
             this.fs.toFile().mkdirs();
+            File settings = this.fs.resolve("settings.json").toFile();
+            if (!settings.exists()) {
+                settings.setWritable(true);
+                OutputStream os = new FileOutputStream(settings);
+                os.write("{}".getBytes());
+                os.close();
+            }
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize file system", e);
         }
 
         Thread.ofVirtual().start(() -> {
             log.info("Initializing LarkBot");
-            this.initializeAccounts();
-            log.info("LarkBot initialized successfully");
+            try {
+                this.initializeAccounts();
+                log.info("LarkBot initialized successfully");
+            } catch (FileNotFoundException e) {
+                log.error("LarkBot settings file not found", e);
+            }
         });
 
         if (Boolean.TRUE.equals(offline)) {
@@ -285,9 +301,10 @@ public class LarkBot extends AgentBot {
                                                     .builder()
                                                     .userId(account.getAccountId())
                                                     .messageType(UserMessageType.CALLBACK.getName())
-                                                    .callback(Callback.builder().type(CallbackEventType.CUSTOM_CMD)
-                                                            .variables(Maps2.of("commands", commands))
-                                                            .build())
+                                                    .callback(new CallbackSet(Sets.newHashSet(
+                                                            Callback.builder().type(CallbackEventType.CUSTOM_CMD)
+                                                                    .variables(Maps2.of("commands", commands))
+                                                                    .build())))
                                                     .build());
                                         } catch (Exception e) {
                                             log.error("Failed to handle command menu event for account {}, error: {}",
@@ -299,9 +316,10 @@ public class LarkBot extends AgentBot {
 
                         })
                         .onP2CardActionTrigger(
-                                new CardActionHandler(this.recvQueue, client, (LarkContext) this.context, openRxLightV2,
+                                new CardActionHandler(this.recvQueue, client, (LarkContext) this.context,
                                         this.cardTemplates,
-                                        this.fs, this.orderApi))
+                                        this.fs,
+                                        this.orderApi))
                         .onP2UserCreatedV3(new P2UserCreatedV3Handler() {
                             @Override
                             public void handle(P2UserCreatedV3 event) throws Exception {
@@ -350,17 +368,21 @@ public class LarkBot extends AgentBot {
                 .start();
     }
 
-    private void initializeAccounts() {
-        String syncFlag = String.format("claw:lark:accounts:sync:%s:%d:flag", this.context.getAppId(),
-                this.context.getAppType().getCode());
-        var response = Future
-                .await(this.redis.get(syncFlag));
-        var completed = Optional
-                .ofNullable(response)
-                .map(resp -> "1".equals(resp.toString()))
-                .orElse(Boolean.FALSE);
+    private void initializeAccounts() throws FileNotFoundException {
 
-        if (Boolean.TRUE.equals(completed)) {
+        LarkBotSetting settings = LarkBotSetting.load(this.fs);
+
+        // String syncFlag = String.format("claw:lark:accounts:sync:%s:%d:flag",
+        // this.context.getAppId(),
+        // this.context.getAppType().getCode());
+        // var response = Future
+        // .await(this.redis.get(syncFlag));
+        // var completed = Optional
+        // .ofNullable(response)
+        // .map(resp -> "1".equals(resp.toString()))
+        // .orElse(Boolean.FALSE);
+
+        if (Boolean.TRUE.equals(settings.getAccountSynced())) {
             log.info("Accounts have already been synchronized from Lark, skipping initialization");
             return;
         }
@@ -510,11 +532,8 @@ public class LarkBot extends AgentBot {
             log.error("Failed to initialize accounts from Lark", e);
         }
 
-        Future.await(this.redis.set(Lists2.of(syncFlag, "1"))
-                .map(r -> null)
-                .onFailure(ex -> {
-                    log.error("Failed to set sync flag in Redis", ex);
-                }));
+        settings.setAccountSynced(Boolean.TRUE);
+        settings.write(this.fs);
     }
 
     @Override
@@ -599,22 +618,67 @@ public class LarkBot extends AgentBot {
         UserMessageType messageType = UserMessageType.fromName(msg.getMessageType());
         switch (messageType) {
             case CALLBACK:
-                var template = this.cardTemplates.getTemplate(msg.getCallback().getType());
-                if (template == null) {
-                    template = this.cardTemplates.getTemplate("default");
+                var callbacks = Sets2.map(Optional.ofNullable(msg.getCallback())
+                        .map(innerCallback -> innerCallback.getCallbacks()).orElse(null),
+                        CallbackVariableTransformer::transform);
+                // var callback = CallbackVariableTransformer.transform(msg.getCallback());
+                var formTemplate = this.cardTemplates.getTemplate(CallbackEventType.HUMAN_IN_LOOP);
+                Sets2.mapNotNull(callbacks, callback -> {
+                    var template = this.cardTemplates.getTemplate(callback.getType());
+                    if (template == null) {
+                        template = this.cardTemplates.getTemplate("default");
+                    }
+
+                    template.replaceVariables(callback.getVariables(), null);
+                    template.replaceVariables(Map.of("callback_id",
+                            ((JsonNode) JsonNodeFactory.instance.textNode(callback.getCallbackId())), "event_type",
+                            ((JsonNode) JsonNodeFactory.instance.textNode(callback.getType()))), null);
+                    return template;
+                }).stream().forEachOrdered(element -> {
+                    formTemplate.mergeElements(element);
+                });
+                String cardJson = JsonUtils.toJson(formTemplate.getContent());
+                CreateCardResp card;
+                try {
+                    card = this.createCard(cardJson);
+                    return Lists2.of(ReplyMessageReqBody.newBuilder()
+                            .content(JsonUtils.toJson(CardMessage.builder()
+                                    .data(CardData.builder().cardId(card.getData().getCardId()).build())
+                                    .build()))
+                            .msgType(UserMessageType.INTERACTIVE.getName())
+                            .replyInThread(true)
+                            .build());
+                } catch (Exception e) {
+                    log.error("exception when create card", e);
+                    return null;
                 }
+                // return Sets2.mapNotNull(callbacks, callback -> {
+                // var template = this.cardTemplates.getTemplate(callback.getType());
+                // if (template == null) {
+                // template = this.cardTemplates.getTemplate("default");
+                // }
 
-                template.replaceVariables(msg.getCallback().getVariables(), null);
-                String cardJson = JsonUtils.toJson(template.getContent());
-                var card = this.createCard(cardJson);
+                // template.replaceVariables(callback.getVariables(), null);
+                // template.replaceVariables(Maps2.of("callback_id",
+                // ((JsonNode) JsonNodeFactory.instance.textNode(callback.getCallbackId()))),
+                // null);
+                // String cardJson = JsonUtils.toJson(template.getContent());
+                // CreateCardResp card;
+                // try {
+                // card = this.createCard(cardJson);
+                // return ReplyMessageReqBody.newBuilder()
+                // .content(JsonUtils.toJson(CardMessage.builder()
+                // .data(CardData.builder().cardId(card.getData().getCardId()).build())
+                // .build()))
+                // .msgType(UserMessageType.INTERACTIVE.getName())
+                // .replyInThread(true)
+                // .build();
+                // } catch (Exception e) {
+                // log.error("exception when create card", e);
+                // return null;
+                // }
+                // }).stream().toList();
 
-                return Lists2.of(ReplyMessageReqBody.newBuilder()
-                        .content(JsonUtils.toJson(CardMessage.builder()
-                                .data(CardData.builder().cardId(card.getData().getCardId()).build())
-                                .build()))
-                        .msgType(UserMessageType.INTERACTIVE.getName())
-                        .replyInThread(true)
-                        .build());
             case IMAGE:
             case AUDIO:
             case FILE:
@@ -690,28 +754,68 @@ public class LarkBot extends AgentBot {
         UserMessageType messageType = UserMessageType.fromName(msg.getMessageType());
         switch (messageType) {
             case CALLBACK:
-                var callback = CallbackVariableTransformer.transform(msg.getCallback());
-                var template = this.cardTemplates.getTemplate(callback.getType());
-                if (template == null) {
-                    template = this.cardTemplates.getTemplate("default");
+                var callbacks = Sets2.map(
+                        Optional.ofNullable(msg.getCallback()).map(inner -> inner.getCallbacks()).orElse(null),
+                        CallbackVariableTransformer::transform);
+                // var callback = CallbackVariableTransformer.transform(msg.getCallback());
+                var formTemplate = this.cardTemplates.getTemplate(CallbackEventType.HUMAN_IN_LOOP);
+                Sets2.mapNotNull(callbacks, callback -> {
+                    var template = this.cardTemplates.getTemplate(callback.getType());
+                    if (template == null) {
+                        template = this.cardTemplates.getTemplate("default");
+                    }
+
+                    template.replaceVariables(callback.getVariables(), null);
+                    template.replaceVariables(Map.of("callback_id",
+                            ((JsonNode) JsonNodeFactory.instance.textNode(callback.getCallbackId())), "event_type",
+                            ((JsonNode) JsonNodeFactory.instance.textNode(callback.getType()))), null);
+                    return template;
+                }).stream().forEachOrdered(element -> {
+                    formTemplate.mergeElements(element);
+                });
+                String cardJson = JsonUtils.toJson(formTemplate.getContent());
+                CreateCardResp card;
+                try {
+                    card = this.createCard(cardJson);
+                    return Lists2.of(CreateMessageReqBody.newBuilder()
+                            .content(JsonUtils.toJson(CardMessage.builder()
+                                    .type("card")
+                                    .data(CardData.builder().cardId(card.getData().getCardId()).build())
+                                    .build()))
+                            .msgType(UserMessageType.INTERACTIVE.getName())
+                            .receiveId(feishuAccount.getExternalAccountId())
+                            .build());
+                } catch (Exception e) {
+                    log.error("exception when create card", e);
+                    return null;
                 }
+                // return Sets2.mapNotNull(callbacks, callback -> {
+                // var template = this.cardTemplates.getTemplate(callback.getType());
+                // if (template == null) {
+                // template = this.cardTemplates.getTemplate("default");
+                // }
 
-                template.replaceVariables(callback.getVariables(), null);
-                template.replaceVariables(Maps2.of("callback_id",
-                        ((JsonNode) JsonNodeFactory.instance.textNode(callback.getCallbackId()))), null);
-                String cardJson = JsonUtils.toJson(template.getContent());
-                var card = this.createCard(cardJson);
-                ((LarkContext) this.context).putCardIndex(msg.getAppMessageId(),
-                        card.getData().getCardId());
-
-                return Lists2.of(CreateMessageReqBody.newBuilder()
-                        .content(JsonUtils.toJson(CardMessage.builder()
-                                .type("card")
-                                .data(CardData.builder().cardId(card.getData().getCardId()).build())
-                                .build()))
-                        .msgType(UserMessageType.INTERACTIVE.getName())
-                        .receiveId(feishuAccount.getExternalAccountId())
-                        .build());
+                // template.replaceVariables(callback.getVariables(), null);
+                // template.replaceVariables(Maps2.of("callback_id",
+                // ((JsonNode) JsonNodeFactory.instance.textNode(callback.getCallbackId()))),
+                // null);
+                // String cardJson = JsonUtils.toJson(template.getContent());
+                // CreateCardResp card;
+                // try {
+                // card = this.createCard(cardJson);
+                // return CreateMessageReqBody.newBuilder()
+                // .content(JsonUtils.toJson(CardMessage.builder()
+                // .type("card")
+                // .data(CardData.builder().cardId(card.getData().getCardId()).build())
+                // .build()))
+                // .msgType(UserMessageType.INTERACTIVE.getName())
+                // .receiveId(feishuAccount.getExternalAccountId())
+                // .build();
+                // } catch (Exception e) {
+                // log.error("exception when create card", e);
+                // return null;
+                // }
+                // }).stream().toList();
             case IMAGE:
             case AUDIO:
             case FILE:

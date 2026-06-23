@@ -9,7 +9,6 @@ import org.apache.commons.lang.StringUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import cn.ggsn.rxlight.ai.domain.AppType;
-import io.vertx.redis.client.RedisAPI;
 import lombok.Getter;
 
 public abstract class AgentContext {
@@ -23,7 +22,7 @@ public abstract class AgentContext {
     protected final Cache<String, String> rxlightMessageIdMap;
     private final Cache<String, String> userLocationMap;
 
-    public AgentContext(int agentId, RedisAPI redis, String appId, AppType appType) {
+    public AgentContext(int agentId, String appId, AppType appType) {
         this.agentId = agentId;
         this.appId = appId;
         this.appType = appType;
@@ -32,7 +31,7 @@ public abstract class AgentContext {
                 .expireAfterWrite(Duration.ofSeconds(600L))
                 .<String, String>build();
         this.userLocationMap = Caffeine.newBuilder().maximumSize(256)
-                .expireAfterWrite(Duration.ofSeconds(60L)).<String, String>build();
+                .expireAfterWrite(Duration.ofSeconds(600L)).<String, String>build();
     }
 
     public void putMsgIndex(String appMessageId, String messageId) {

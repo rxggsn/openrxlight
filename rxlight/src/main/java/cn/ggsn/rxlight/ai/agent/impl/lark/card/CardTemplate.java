@@ -9,11 +9,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies.SnakeCaseStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import cn.ggsn.openrxlight.lang.Maps2;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonNaming(SnakeCaseStrategy.class)
 public class CardTemplate {
     private String templateId;
@@ -64,6 +67,23 @@ public class CardTemplate {
                     replaceVariable(origin, item, key, value, preProcess);
                 }
             }
+        }
+    }
+
+    public void mergeElements(CardTemplate other) {
+        if (other != null) {
+            var elements = ((ArrayNode) other.content);
+            var selfElements = ((ArrayNode) this.content.get("body").get("elements"));
+            selfElements.iterator().forEachRemaining(element -> {
+                if (StringUtils.equals(element.get("tag").asText(), "form")) {
+                    ArrayNode formElements = (ArrayNode) element.get("elements");
+                    if (formElements.isEmpty()) {
+                        formElements.addAll(elements);
+                    } else {
+                        elements.forEach(e -> formElements.insert(formElements.size() - 1, e));
+                    }
+                }
+            });
         }
     }
 }

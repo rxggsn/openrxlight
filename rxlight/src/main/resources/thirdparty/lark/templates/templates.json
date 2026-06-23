@@ -1,190 +1,72 @@
 [
     {
         "template_id": "show_image",
-        "content": {
-            "schema": "2.0",
-            "config": {
-                "update_multi": true,
-                "style": {
-                    "text_size": {
-                        "normal_v2": {
-                            "default": "normal",
-                            "pc": "normal",
-                            "mobile": "heading"
-                        }
-                    }
-                }
+        "content": [
+            {
+                "tag": "div",
+                "text": {
+                    "tag": "plain_text",
+                    "content": "${descrption}",
+                    "text_size": "normal_v2",
+                    "text_align": "left",
+                    "text_color": "default"
+                },
+                "margin": "0px 0px 0px 0px"
             },
-            "body": {
-                "direction": "vertical",
-                "padding": "12px 12px 12px 12px",
-                "elements": [
-                    {
-                        "tag": "div",
-                        "text": {
-                            "tag": "plain_text",
-                            "content": "${descrption}",
-                            "text_size": "normal_v2",
-                            "text_align": "left",
-                            "text_color": "default"
-                        },
-                        "margin": "0px 0px 0px 0px"
-                    },
-                    {
-                        "tag": "img",
-                        "img_key": "${image_key}",
-                        "preview": true,
-                        "transparent": false,
-                        "scale_type": "fit_horizontal",
-                        "margin": "0px 0px 0px 0px"
-                    }
-                ]
+            {
+                "tag": "img",
+                "img_key": "${image_key}",
+                "preview": true,
+                "transparent": false,
+                "scale_type": "fit_horizontal",
+                "margin": "0px 0px 0px 0px"
             }
-        }
+        ]
     },
     {
         "template_id": "confirm_station",
         "stream_key": "markdown_1",
-        "content": {
-            "schema": "2.0",
-            "config": {
-                "update_multi": true,
-                "style": {
-                    "text_size": {
-                        "normal_v2": {
-                            "default": "normal",
-                            "pc": "normal",
-                            "mobile": "heading"
-                        }
-                    }
-                }
-            },
-            "body": {
-                "direction": "vertical",
-                "padding": "12px 12px 12px 12px",
+        "content": [
+            {
+                "tag": "column",
+                "width": "auto",
                 "elements": [
                     {
-                        "tag": "form",
-                        "elements": [
-                            {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "**站点** <font color=red>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择站点"
-                                                },
-                                                "options": "${stations}",
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "locations",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "station"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "button",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "确认"
-                                                },
-                                                "type": "primary_filled",
-                                                "width": "default",
-                                                "confirm": {
-                                                    "title": {
-                                                        "tag": "plain_text",
-                                                        "content": ""
-                                                    },
-                                                    "text": {
-                                                        "tag": "plain_text",
-                                                        "content": ""
-                                                    }
-                                                },
-                                                "behaviors": [
-                                                    {
-                                                        "type": "callback_type",
-                                                        "value": {
-                                                            "event_type": "confirm_station",
-                                                            "callback_id": "${callback_id}"
-                                                        }
-                                                    }
-                                                ],
-                                                "form_action_type": "submit",
-                                                "name": "confirm",
-                                                "element_id": "confirm"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            }
-                        ],
-                        "direction": "vertical",
-                        "padding": "4px 0px 4px 0px",
-                        "margin": "0px 0px 0px 0px",
-                        "name": "Form_m59r73o5"
+                        "tag": "markdown",
+                        "content": "**站点** <font color=red>*</font>",
+                        "text_align": "left",
+                        "text_size": "normal_v2",
+                        "margin": "4px 0px 0px 0px"
                     }
-                ]
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top"
             },
-            "header": {
-                "title": {
-                    "tag": "plain_text",
-                    "content": "请确认您的站点信息"
-                },
-                "subtitle": {
-                    "tag": "plain_text",
-                    "content": "请确认目标站点"
-                },
-                "template": "blue",
-                "icon": {
-                    "tag": "standard_icon",
-                    "token": "special-attention_outlined"
-                },
-                "padding": "12px 12px 12px 12px"
+            {
+                "tag": "column",
+                "width": "auto",
+                "elements": [
+                    {
+                        "tag": "select_static",
+                        "placeholder": {
+                            "tag": "plain_text",
+                            "content": "请选择站点"
+                        },
+                        "options": "${stations}",
+                        "type": "default",
+                        "width": "default",
+                        "required": true,
+                        "name": "stations:${event_type}:${callback_id}",
+                        "margin": "0px 0px 0px 0px",
+                        "element_id": "stations"
+                    }
+                ],
+                "vertical_spacing": "8px",
+                "horizontal_align": "left",
+                "vertical_align": "top"
             }
-        }
+        ]
     },
     {
         "template_id": "pagination",
@@ -243,7 +125,7 @@
                                                 "disabled": "${is_first_page}",
                                                 "behaviors": [
                                                     {
-                                                        "type": "callback_type",
+                                                        "type": "callback",
                                                         "value": {
                                                             "event_type": "prev_page"
                                                         }
@@ -273,7 +155,7 @@
                                                 "disabled": "${is_last_page}",
                                                 "behaviors": [
                                                     {
-                                                        "type": "callback_type",
+                                                        "type": "callback",
                                                         "value": {
                                                             "event_type": "next_page"
                                                         }
@@ -304,738 +186,582 @@
     {
         "template_id": "confirm_plate_no",
         "stream_key": "markdown_1",
-        "content": {
-            "schema": "2.0",
-            "config": {
-                "update_multi": true,
-                "style": {
-                    "text_size": {
-                        "normal_v2": {
-                            "default": "normal",
-                            "pc": "normal",
-                            "mobile": "heading"
-                        }
-                    }
-                }
-            },
-            "body": {
-                "direction": "vertical",
-                "padding": "12px 12px 12px 12px",
-                "elements": [
+        "content": [
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
                     {
-                        "tag": "form",
+                        "tag": "column",
+                        "width": "auto",
                         "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "车牌号<font color=red>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择"
-                                                },
-                                                "options": "${plate_nos}",
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "plate_nos",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "plate_nos"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "button",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "确认"
-                                                },
-                                                "type": "primary_filled",
-                                                "width": "default",
-                                                "behaviors": [
-                                                    {
-                                                        "type": "callback_type",
-                                                        "value": {
-                                                            "event_type": "confirm_plate_no",
-                                                            "callback_id": "${callback_id}"
-                                                        }
-                                                    }
-                                                ],
-                                                "form_action_type": "submit",
-                                                "name": "confirm",
-                                                "element_id": "confirm"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ]
+                                "tag": "markdown",
+                                "content": "车牌号<font color=red>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
                             }
                         ],
-                        "direction": "vertical",
-                        "padding": "4px 0px 4px 0px",
-                        "margin": "0px 0px 0px 0px",
-                        "name": "Form_mp2aod70"
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择"
+                                },
+                                "options": "${plate_nos}",
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "plate_nos:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "plate_nos"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
                     }
-                ]
-            },
-            "header": {
-                "title": {
-                    "tag": "plain_text",
-                    "content": "确认车牌号"
-                },
-                "subtitle": {
-                    "tag": "plain_text",
-                    "content": "请确认您的订单信息"
-                },
-                "template": "blue",
-                "padding": "12px 12px 12px 12px"
+                ],
+                "margin": "0px 0px 0px 0px"
             }
-        }
+        ]
     },
     {
         "template_id": "confirm_reservation",
         "stream_key": "markdown_1",
-        "content": {
-            "schema": "2.0",
-            "config": {
-                "update_multi": true,
-                "style": {
-                    "text_size": {
-                        "normal_v2": {
-                            "default": "normal",
-                            "pc": "normal",
-                            "mobile": "heading"
-                        }
-                    }
-                }
-            },
-            "body": {
-                "direction": "vertical",
-                "padding": "12px 12px 12px 12px",
-                "elements": [
+        "content": [
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
                     {
-                        "tag": "form",
+                        "tag": "column",
+                        "width": "auto",
                         "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "站点 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请确认站点"
-                                                },
-                                                "options": "${stations}",
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "Select_k58ffgm02s",
-                                                "margin": "0px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "预约时间范围 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "picker_datetime",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择"
-                                                },
-                                                "width": "default",
-                                                "initial_datetime": "${start_time}",
-                                                "required": true,
-                                                "name": "start_time",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "start_time"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 1
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "picker_datetime",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择"
-                                                },
-                                                "width": "default",
-                                                "initial_datetime": "${end_time}",
-                                                "required": true,
-                                                "name": "end_time",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "end_time"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 1
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "button",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "确认"
-                                                },
-                                                "type": "primary_filled",
-                                                "width": "default",
-                                                "hover_tips": {
-                                                    "tag": "plain_text",
-                                                    "content": "确认后将为您创建预约单，请注意查收"
-                                                },
-                                                "behaviors": [
-                                                    {
-                                                        "type": "callback_type",
-                                                        "value": {
-                                                            "event_type": "confirm_reservation",
-                                                            "callback_id": "${callback_id}"
-                                                        }
-                                                    }
-                                                ],
-                                                "form_action_type": "submit",
-                                                "name": "confirm",
-                                                "element_id": "confirm"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ]
+                                "tag": "markdown",
+                                "content": "站点 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
                             }
                         ],
-                        "direction": "vertical",
-                        "padding": "4px 0px 4px 0px",
-                        "margin": "0px 0px 0px 0px",
-                        "name": "Form_mc9ya9qz"
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请确认站点"
+                                },
+                                "options": "${stations}",
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "stations:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "stations"
+                            }
+                        ],
+                        "vertical_align": "top"
                     }
-                ]
+                ],
+                "margin": "0px 0px 0px 0px"
             },
-            "header": {
-                "title": {
-                    "tag": "plain_text",
-                    "content": "「您的预约信息」请确认您的站点和时间"
-                },
-                "subtitle": {
-                    "tag": "plain_text",
-                    "content": ""
-                },
-                "template": "blue",
-                "icon": {
-                    "tag": "standard_icon",
-                    "token": "home_outlined"
-                },
-                "padding": "12px 12px 12px 12px"
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "预约时间范围 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
+                            {
+                                "tag": "picker_datetime",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择"
+                                },
+                                "width": "default",
+                                "initial_datetime": "${start_time}",
+                                "required": true,
+                                "name": "start_time:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "start_time"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 1
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
+                            {
+                                "tag": "picker_datetime",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择"
+                                },
+                                "width": "default",
+                                "initial_datetime": "${end_time}",
+                                "required": true,
+                                "name": "end_time:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "end_time"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 1
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
             }
-        }
+        ]
     },
     {
         "template_id": "confirm_order",
-        "content": {
-            "schema": "2.0",
-            "config": {
-                "update_multi": true,
-                "style": {
-                    "text_size": {
-                        "normal_v2": {
-                            "default": "normal",
-                            "pc": "normal",
-                            "mobile": "heading"
-                        }
-                    }
-                }
-            },
-            "body": {
-                "direction": "vertical",
-                "padding": "12px 12px 12px 12px",
-                "elements": [
+        "content": [
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
                     {
-                        "tag": "form",
+                        "tag": "column",
+                        "width": "auto",
                         "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "站点 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "选择站点"
-                                                },
-                                                "options": "${stations}",
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "station",
-                                                "margin": "0px 0px 2px 0px",
-                                                "element_id": "station"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 5
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
+                                "tag": "markdown",
+                                "content": "站点 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "停车位 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择"
-                                                },
-                                                "options": "${spaces}",
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "space_no",
-                                                "margin": "0px 0px 2px 0px",
-                                                "element_id": "space_no"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 1
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "选择站点"
+                                },
+                                "options": "${stations}",
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "stations:${event_type}:${callback_id}",
+                                "margin": "0px 0px 2px 0px",
+                                "element_id": "stations"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 5
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "车牌号 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "input",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请输入"
-                                                },
-                                                "default_value": "${plate_no}",
-                                                "width": "default",
-                                                "disabled": true,
-                                                "name": "plate_no",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "plate_no"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 1
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
+                                "tag": "markdown",
+                                "content": "停车位 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "充电类型 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "weighted",
-                                        "elements": [
-                                            {
-                                                "tag": "div",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "${charge_basic}",
-                                                    "text_size": "normal_v2",
-                                                    "text_align": "left",
-                                                    "text_color": "default"
-                                                },
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top",
-                                        "weight": 3
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择"
+                                },
+                                "options": "${spaces}",
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "space_no:${event_type}:${callback_id}",
+                                "margin": "0px 0px 2px 0px",
+                                "element_id": "space_no"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 1
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
                             {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "预付费用 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "0px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "div",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "${prepay}元",
-                                                    "text_size": "normal_v2",
-                                                    "text_align": "left",
-                                                    "text_color": "default"
-                                                },
-                                                "margin": "0px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
+                                "tag": "markdown",
+                                "content": "车牌号 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
                             {
                                 "tag": "input",
                                 "placeholder": {
                                     "tag": "plain_text",
-                                    "content": "您的车辆当前所剩电量（SOC百分比）"
+                                    "content": "请输入"
                                 },
-                                "default_value": "${initial_soc}",
+                                "default_value": "${plate_no}",
                                 "width": "default",
-                                "label": {
-                                    "tag": "plain_text",
-                                    "content": "起始 SOC"
-                                },
-                                "label_position": "left",
                                 "disabled": true,
-                                "required": false,
-                                "name": "initial_soc",
+                                "name": "plate_no:${event_type}:${callback_id}",
                                 "margin": "0px 0px 0px 0px",
-                                "element_id": "initial_soc"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_spacing": "8px",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "markdown",
-                                                "content": "支付方式 <font color='red'>*</font>",
-                                                "text_align": "left",
-                                                "text_size": "normal_v2",
-                                                "margin": "4px 0px 0px 0px"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    },
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "select_static",
-                                                "placeholder": {
-                                                    "tag": "plain_text",
-                                                    "content": "请选择"
-                                                },
-                                                "options": [
-                                                    {
-                                                        "text": {
-                                                            "tag": "plain_text",
-                                                            "content": "微信扫码支付"
-                                                        },
-                                                        "value": "wechat",
-                                                        "icon": {
-                                                            "tag": "custom_icon",
-                                                            "img_key": "img_v3_0212g_2059de01-0e26-4718-b470-ee3960780b5g"
-                                                        }
-                                                    }
-                                                ],
-                                                "type": "default",
-                                                "width": "default",
-                                                "required": true,
-                                                "name": "payment_channel",
-                                                "margin": "0px 0px 0px 0px",
-                                                "element_id": "payment_channel"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ],
-                                "margin": "0px 0px 0px 0px"
-                            },
-                            {
-                                "tag": "column_set",
-                                "horizontal_align": "left",
-                                "columns": [
-                                    {
-                                        "tag": "column",
-                                        "width": "auto",
-                                        "elements": [
-                                            {
-                                                "tag": "button",
-                                                "text": {
-                                                    "tag": "plain_text",
-                                                    "content": "确认"
-                                                },
-                                                "type": "primary_filled",
-                                                "width": "default",
-                                                "hover_tips": {
-                                                    "tag": "plain_text",
-                                                    "content": ""
-                                                },
-                                                "behaviors": [
-                                                    {
-                                                        "type": "callback",
-                                                        "value": {
-                                                            "event_type": "confirm_order",
-                                                            "charge_basic_type": "${charge_basic_type}",
-                                                            "charge_basic_value": "${charge_basic_value}",
-                                                            "prepay": "${prepay}",
-                                                            "order_type": "v2v"
-                                                        }
-                                                    }
-                                                ],
-                                                "form_action_type": "submit",
-                                                "name": "confirm",
-                                                "element_id": "confirm"
-                                            }
-                                        ],
-                                        "vertical_spacing": "8px",
-                                        "horizontal_align": "left",
-                                        "vertical_align": "top"
-                                    }
-                                ]
+                                "element_id": "plate_no"
                             }
                         ],
-                        "direction": "vertical",
-                        "padding": "4px 0px 4px 0px",
-                        "margin": "0px 0px 0px 0px",
-                        "name": "Form_mc9ya9s9"
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 1
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "充电类型 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "weighted",
+                        "elements": [
+                            {
+                                "tag": "div",
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "${charge_basic}",
+                                    "text_size": "normal_v2",
+                                    "text_align": "left",
+                                    "text_color": "default"
+                                },
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top",
+                        "weight": 3
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "预付费用 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "0px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "div",
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "${prepay}元",
+                                    "text_size": "normal_v2",
+                                    "text_align": "left",
+                                    "text_color": "default"
+                                },
+                                "margin": "0px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "input",
+                "placeholder": {
+                    "tag": "plain_text",
+                    "content": "您的车辆当前所剩电量（SOC百分比）"
+                },
+                "default_value": "${initial_soc}",
+                "width": "default",
+                "label": {
+                    "tag": "plain_text",
+                    "content": "起始 SOC"
+                },
+                "label_position": "left",
+                "disabled": true,
+                "required": false,
+                "name": "initial_soc:${event_type}:${callback_id}",
+                "margin": "0px 0px 0px 0px",
+                "element_id": "initial_soc"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "支付方式 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "4px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择"
+                                },
+                                "options": [
+                                    {
+                                        "text": {
+                                            "tag": "plain_text",
+                                            "content": "微信扫码支付"
+                                        },
+                                        "value": "wechat",
+                                        "icon": {
+                                            "tag": "custom_icon",
+                                            "img_key": "img_v3_0212g_2059de01-0e26-4718-b470-ee3960780b5g"
+                                        }
+                                    }
+                                ],
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "payment_channel:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "payment_channel"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            },
+            {
+                "tag": "column_set",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "button",
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "确认"
+                                },
+                                "type": "primary_filled",
+                                "width": "default",
+                                "hover_tips": {
+                                    "tag": "plain_text",
+                                    "content": ""
+                                },
+                                "behaviors": [
+                                    {
+                                        "type": "callback",
+                                        "value": {
+                                            "event_type": "confirm_order",
+                                            "charge_basic_type": "${charge_basic_type}",
+                                            "charge_basic_value": "${charge_basic_value}",
+                                            "prepay": "${prepay}",
+                                            "order_type": "v2v"
+                                        }
+                                    }
+                                ],
+                                "form_action_type": "submit",
+                                "name": "confirm",
+                                "element_id": "confirm"
+                            }
+                        ],
+                        "vertical_spacing": "8px",
+                        "horizontal_align": "left",
+                        "vertical_align": "top"
                     }
                 ]
-            },
-            "header": {
-                "title": {
-                    "tag": "plain_text",
-                    "content": "「订单信息」请确认您的订单信息"
-                },
-                "subtitle": {
-                    "tag": "plain_text",
-                    "content": ""
-                },
-                "template": "blue",
-                "icon": {
-                    "tag": "standard_icon",
-                    "token": "ai-common_colorful"
-                },
-                "padding": "12px 12px 12px 12px"
             }
-        }
+        ]
     },
     {
         "template_id": "confirm_reservation_time",
+        "content": [
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "<font color=red>*</font> 预约时间",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "6px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "picker_datetime",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择预约日期时间"
+                                },
+                                "width": "default",
+                                "initial_datetime": "${reservation_time}",
+                                "required": true,
+                                "name": "reservation_time:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px",
+                                "element_id": "reservation_time"
+                            }
+                        ],
+                        "vertical_align": "top"
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            }
+        ]
+    },
+    {
+        "template_id": "human_in_loop",
         "content": {
             "schema": "2.0",
             "config": {
@@ -1049,19 +775,6 @@
                         "tag": "form",
                         "elements": [
                             {
-                                "tag": "picker_datetime",
-                                "placeholder": {
-                                    "tag": "plain_text",
-                                    "content": "请选择预约日期时间"
-                                },
-                                "width": "default",
-                                "initial_datetime": "${reservation_time}",
-                                "required": true,
-                                "name": "reservation_time",
-                                "margin": "0px 0px 0px 0px",
-                                "element_id": "reservation_time"
-                            },
-                            {
                                 "tag": "column_set",
                                 "horizontal_align": "left",
                                 "columns": [
@@ -1081,8 +794,8 @@
                                                     {
                                                         "type": "callback",
                                                         "value": {
-                                                            "event_type": "confirm_reservation_time",
-                                                            "callback_id": "${callback_id}"
+                                                            "event_type": "human_in_loop",
+                                                            "sub_event_types": "${sub_event_types}"
                                                         }
                                                     }
                                                 ],
@@ -1101,22 +814,57 @@
                         "direction": "vertical",
                         "padding": "4px 0px 4px 0px",
                         "margin": "0px 0px 0px 0px",
-                        "name": "Form_mqeuce6s"
+                        "name": "Form_mqn7uahe"
                     }
                 ]
-            },
-            "header": {
-                "title": {
-                    "tag": "plain_text",
-                    "content": "「预约」请确认您的预约时间"
-                },
-                "subtitle": {
-                    "tag": "plain_text",
-                    "content": "确认预约时间"
-                },
-                "template": "blue",
-                "padding": "12px 12px 12px 12px"
             }
         }
+    },
+    {
+        "template_id": "confirm_location",
+        "content": [
+            {
+                "tag": "column_set",
+                "horizontal_spacing": "8px",
+                "horizontal_align": "left",
+                "columns": [
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "markdown",
+                                "content": "地点 <font color='red'>*</font>",
+                                "text_align": "left",
+                                "text_size": "normal_v2",
+                                "margin": "6px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_align": "top"
+                    },
+                    {
+                        "tag": "column",
+                        "width": "auto",
+                        "elements": [
+                            {
+                                "tag": "select_static",
+                                "placeholder": {
+                                    "tag": "plain_text",
+                                    "content": "请选择您要去的目的地"
+                                },
+                                "options": "${locations}",
+                                "type": "default",
+                                "width": "default",
+                                "required": true,
+                                "name": "locations:${event_type}:${callback_id}",
+                                "margin": "0px 0px 0px 0px"
+                            }
+                        ],
+                        "vertical_align": "top"
+                    }
+                ],
+                "margin": "0px 0px 0px 0px"
+            }
+        ]
     }
 ]

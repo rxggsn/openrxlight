@@ -12,9 +12,6 @@ public interface CallbackEventType {
     public static final String QUERY_ORDERS = "query_orders";
     public static final String QUERY_STATIONS = "query_stations";
     public static final String QUERY_DEVICES = "query_devices";
-    public static final String PAY_FOR_BILL = "pay_for_bill";
-    public static final String PAY_FOR_ADDED_ON = "pay_for_added_on";
-    public static final String UPGRADE_CREDIT_PLAN = "upgrade_credit_plan";
-    public static final String BUY_ADDED_ON = "buy_added_on";
     public static final String CUSTOM_CMD = "custom_command";
+    public static final String HUMAN_IN_LOOP = "human_in_loop";
 }

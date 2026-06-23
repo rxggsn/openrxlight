@@ -3,13 +3,18 @@ package cn.ggsn.rxlight.ai.agent.impl.lark.card;
 import java.math.RoundingMode;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import cn.ggsn.openrxlight.Constants;
 import cn.ggsn.openrxlight.lang.Lists2;
+import cn.ggsn.openrxlight.lang.Maps2;
 import cn.ggsn.openrxlight.model.chat.Callback;
+import cn.ggsn.openrxlight.model.chat.callback.event.ConfirmLocation;
 import cn.ggsn.openrxlight.model.chat.callback.event.ConfirmOrder;
 import cn.ggsn.openrxlight.model.chat.callback.event.ConfirmPlateNo;
 import cn.ggsn.openrxlight.model.chat.callback.event.ConfirmReservation;
@@ -42,11 +47,30 @@ public class CallbackVariableTransformer {
                                                 .getVariablesAs(ConfirmReservationTime.class);
                                 newCallback = transformConfirmReservationTime(confirmReservationTime);
                                 break;
+                        case ConfirmLocation.CALLBACK_TYPE:
+                                ConfirmLocation confirmLocation = callback
+                                                .getVariablesAs(ConfirmLocation.class);
+                                newCallback = transformConfirmLocation(confirmLocation);
                         default:
                                 break;
                 }
                 newCallback.setCallbackId(callback.getCallbackId());
                 return newCallback;
+        }
+
+        private static Callback transformConfirmLocation(ConfirmLocation confirmLocation) {
+                ArrayNode locations = JsonNodeFactory.instance.arrayNode();
+                Lists2.foreach(confirmLocation.getLocations(), location -> {
+                        locations.add(OptionItem.builder()
+                                        .value(JsonNodeFactory.instance.textNode(location.getId()))
+                                        .text(OptionItem.Text.plainText(String.format("%s: %s", location.getName(),
+                                                        location.getAddress())))
+                                        .build().toJsonNode());
+                });
+                return Callback.builder()
+                                .type(ConfirmLocation.CALLBACK_TYPE)
+                                .variables(Map.of("locations", locations))
+                                .build();
         }
 
         private static Callback transformConfirmReservationTime(ConfirmReservationTime confirmReservationTime) {
@@ -55,8 +79,8 @@ public class CallbackVariableTransformer {
                                 .variables(Map.of(
                                                 "reservation_time",
                                                 JsonNodeFactory.instance.textNode(
-                                                                confirmReservationTime.getNativeReservationTime().format(
-                                                                                Constants.DATE_HH_MM_FORMATTER))))
+                                                                confirmReservationTime.getNativeReservationTime()
+                                                                                .format(Constants.DATE_HH_MM_FORMATTER))))
                                 .build();
         }
 
@@ -66,7 +90,7 @@ public class CallbackVariableTransformer {
                                 .builder()
                                 .text(OptionItem.Text.plainText(confirmOrder.getStation().getName()))
                                 .value(JsonNodeFactory.instance
-                                                .numberNode(confirmOrder.getStation().getId()))
+                                                .textNode(Long.toString(confirmOrder.getStation().getId())))
                                 .build()
                                 .toJsonNode());
                 ArrayNode spaces = JsonNodeFactory.instance.arrayNode();
@@ -74,7 +98,7 @@ public class CallbackVariableTransformer {
                                 .builder()
                                 .text(OptionItem.Text.plainText(confirmOrder.getSpace().getSpaceNo()))
                                 .value(JsonNodeFactory.instance
-                                                .numberNode(confirmOrder.getSpace().getId()))
+                                                .textNode(Long.toString(confirmOrder.getSpace().getId())))
                                 .build()
                                 .toJsonNode());
                 TextNode chargeBasic = JsonNodeFactory.instance.textNode(confirmOrder.getChargeBasicDesc());
@@ -99,7 +123,7 @@ public class CallbackVariableTransformer {
                                 .builder()
                                 .text(OptionItem.Text.plainText(confirmReservation.getStation().getName()))
                                 .value(JsonNodeFactory.instance
-                                                .numberNode(confirmReservation.getStation().getId()))
+                                                .textNode(Long.toString(confirmReservation.getStation().getId())))
                                 .build()
                                 .toJsonNode());
                 return Callback.builder()
@@ -123,7 +147,7 @@ public class CallbackVariableTransformer {
                                 .builder()
                                 .text(OptionItem.Text.plainText(confirmPlateNo.getStation().getName()))
                                 .value(JsonNodeFactory.instance
-                                                .numberNode(confirmPlateNo.getStation().getId()))
+                                                .textNode(Long.toString(confirmPlateNo.getStation().getId())))
                                 .build()
                                 .toJsonNode());
                 ArrayNode spaces = JsonNodeFactory.instance.arrayNode();
@@ -131,7 +155,7 @@ public class CallbackVariableTransformer {
                                 .builder()
                                 .text(OptionItem.Text.plainText(confirmPlateNo.getSpace().getSpaceNo()))
                                 .value(JsonNodeFactory.instance
-                                                .numberNode(confirmPlateNo.getSpace().getId()))
+                                                .textNode(Long.toString(confirmPlateNo.getSpace().getId())))
                                 .build()
                                 .toJsonNode());
 
@@ -144,17 +168,26 @@ public class CallbackVariableTransformer {
         private static Callback transformConfirmStation(ConfirmStation confirmStation) {
                 ArrayNode stationsNode = JsonNodeFactory.instance.arrayNode();
                 Lists2.map(confirmStation.getStations(), st -> OptionItem.builder()
-                                .text(OptionItem.Text.builder()
-                                                .text(st.getName())
-                                                .type(OptionItem.Text.TextType.PlainText)
-                                                .build())
-                                .value(JsonNodeFactory.instance.numberNode(st.getId()))
+                                .text(OptionItem.Text.plainText(st.getName()))
+                                .value(JsonNodeFactory.instance.textNode(Long.toString(st.getId())))
                                 .build()
                                 .toJsonNode())
                                 .forEach(stationsNode::add);
                 return Callback.builder()
                                 .type(ConfirmStation.CALLBACK_TYPE)
                                 .variables(Map.of("stations", stationsNode))
+                                .build();
+        }
+
+        public static Callback extractCallback(String key, JsonNode value) {
+                String[] split = StringUtils.split(key, ":");
+                if (split.length < 3) {
+                        return null;
+                }
+                var name = split[0];
+                var eventType = split[1];
+                var callbackId = split[2];
+                return Callback.builder().callbackId(callbackId).type(eventType).variables(Maps2.of(name, value))
                                 .build();
         }
 }

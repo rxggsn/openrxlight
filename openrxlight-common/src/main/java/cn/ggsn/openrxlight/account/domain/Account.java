@@ -160,18 +160,9 @@ public class Account extends BaseEntity {
     }
 
     public static Optional<Account> getByAccountId(UUID accountId, AccountType accountType) {
-        return QuarkusTransaction.joiningExisting().call(() -> {
-            CriteriaBuilder cb = Account.getEntityManager().getCriteriaBuilder();
-            var query = cb.createQuery(Account.class);
-            var root = query.from(Account.class);
-            return Account.getEntityManager()
-                    .createQuery(query.select(root)
-                            .where(cb.and(
-                                    cb.equal(root.get("accountId"), accountId),
-                                    cb.equal(root.get("accountType"), accountType.getValue()))))
-                    .getResultStream()
-                    .findFirst();
-        });
+        return QuarkusTransaction.joiningExisting()
+                .call(() -> Account.find("accountId = ?1 and accountType = ?2", accountId, accountType.getValue())
+                        .firstResultOptional());
     }
 
     public static Optional<Account> getAccountByExternalAccount(String externalAccountId,

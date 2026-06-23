@@ -84,11 +84,9 @@ public class TokenInterceptor {
     @ServerRequestFilter
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String authorization = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
-        String path = requestContext.getUriInfo().getPath();
-        if (AuthConstants.IGNORE_AUTH_BIZ_URI.stream().anyMatch(uri -> {
-            return StringUtils.equals(uri.getMethod(), requestContext.getMethod()) &&
-                    StringUtils.equals(uri.getPath(), path);
-        })) {
+        if (AuthConstants.IGNORE_AUTH_BIZ_URI.stream()
+                .anyMatch(
+                        uri -> uri.match(new Uri(requestContext.getMethod(), requestContext.getUriInfo().getPath())))) {
             return;
         }
         if (StringUtils.isBlank(authorization)
